@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1d2733"/>
+      <stop offset="1" stop-color="#3a4654"/>
+    </linearGradient>
+  </defs>
+  <rect width="1280" height="720" fill="url(#sky)"/>
+  <polygon points="520,360 760,360 1280,720 0,720" fill="#2a3038"/>
+  <g stroke="#e9edf2" stroke-width="6" stroke-dasharray="40 50" opacity=".55">
+    <line x1="600" y1="360" x2="300" y2="720"/>
+    <line x1="680" y1="360" x2="980" y2="720"/>
+  </g>
+  <rect x="598" y="392" width="84" height="54" rx="10" fill="#8c98a8"/>
+  <text x="640" y="170" fill="#ffffff" font-family="system-ui, sans-serif" font-size="40" font-weight="700" text-anchor="middle">CARLA 주행 화면 자리</text>
+  <text x="640" y="220" fill="#c9d3df" font-family="system-ui, sans-serif" font-size="24" text-anchor="middle">데모 모드에서는 실제 카메라 영상 대신 이 이미지가 보입니다</text>
+</svg>

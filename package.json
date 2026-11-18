@@ -1,0 +1,16 @@
+{
+  "name": "hongik-hmi-ui",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Passenger HMI (tablet navigation) from hongik-carla-hmi, runnable without CARLA via a demo backend.",
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/dev-server.mjs",
+    "build": "node scripts/build.mjs",
+    "import-lab": "python3 scripts/import_from_lab.py ../hongik-carla-hmi",
+    "export-lab": "python3 scripts/export_to_lab.py ../hongik-carla-hmi"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

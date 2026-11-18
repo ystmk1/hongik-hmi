@@ -1,0 +1,251 @@
+{
+ "options": {
+  "congestion": [
+   {
+    "action": "study_horn",
+    "scenario_action": "request_horn",
+    "label": "클락션",
+    "detail": "앞차에 경적을 길게 한 번 울려요."
+   },
+   {
+    "action": "study_merge",
+    "scenario_action": "request_merge",
+    "label": "1차로로 진입하기",
+    "detail": "안전한 틈이 확보되면 왼쪽 차로로 이동해요."
+   },
+   {
+    "action": "study_end_ride",
+    "scenario_action": "request_end_ride",
+    "label": "근처에서 내리기",
+    "detail": "안전하게 정차할 장소를 확인하고 이용을 마쳐요."
+   }
+  ],
+  "fog": [
+   {
+    "action": "study_inspect",
+    "scenario_action": "request_inspect",
+    "label": "주변 인식 화면 보기",
+    "detail": "차량 주변의 위치와 차로 표시를 자세히 살펴봐요."
+   },
+   {
+    "action": "study_slow",
+    "scenario_action": "request_slow",
+    "label": "더 천천히 가기",
+    "detail": "속도를 더 낮추고 앞차와의 거리를 확보해요."
+   },
+   {
+    "action": "study_safe_stop",
+    "scenario_action": "request_safe_stop",
+    "label": "갓길에 세우기",
+    "detail": "정차할 공간을 확인한 뒤 천천히 이동해요."
+   }
+  ],
+  "night": [
+   {
+    "action": "study_horn",
+    "scenario_action": "request_horn",
+    "label": "클락션",
+    "detail": "앞차에 경적을 한 번 짧게 울려요."
+   },
+   {
+    "action": "study_widen",
+    "scenario_action": "request_widen",
+    "label": "거리 더 넓히기",
+    "detail": "앞차와 간격을 크게 벌려요."
+   },
+   {
+    "action": "study_pass",
+    "scenario_action": "request_pass",
+    "label": "안전할 때 앞질러 가기",
+    "detail": "왼쪽에 안전한 틈이 확보되면 추월해요."
+   },
+   {
+    "action": "study_safe_stop",
+    "scenario_action": "request_safe_stop",
+    "label": "갓길에서 잠시 기다리기",
+    "detail": "정차할 공간을 확인하고 위험 차량이 멀어지길 기다려요."
+   }
+  ],
+  "yield": [
+   {
+    "action": "study_announce",
+    "scenario_action": "request_announce",
+    "label": "보행자에게 먼저 건너라고 알리기",
+    "detail": "외부 스피커로 양보 의사를 전해요."
+   },
+   {
+    "action": "study_creep",
+    "scenario_action": "request_creep",
+    "label": "천천히 출발하기",
+    "detail": "보행자가 횡단 구간을 벗어났는지 확인한 뒤 출발해요."
+   },
+   {
+    "action": "study_end_ride",
+    "scenario_action": "request_end_ride",
+    "label": "여기서 내리기",
+    "detail": "주변의 안전한 정차 장소를 먼저 확인해요."
+   }
+  ],
+  "carpool": [
+   {
+    "action": "study_support",
+    "scenario_action": "request_support",
+    "label": "관제 센터 연결",
+    "detail": "지원 연결을 요청하고 차량의 대기 상태를 확인해요."
+   },
+   {
+    "action": "study_relocate",
+    "scenario_action": "request_relocate",
+    "label": "지금 바로 출발하기",
+    "detail": "주변 사람이 물러나면 다른 대기 위치로 이동해요."
+   },
+   {
+    "action": "study_end_ride",
+    "scenario_action": "request_end_ride",
+    "label": "안전한 곳으로 옮겨서 내리기",
+    "detail": "주변을 확인하고 이동해 정차한 뒤 이용을 마쳐요."
+   }
+  ],
+  "rattle": [
+   {
+    "action": "study_inspect",
+    "scenario_action": "request_inspect",
+    "label": "차량 상태 자세히 보기",
+    "detail": "현재 속도와 주행 상태, 확인된 경고를 살펴봐요."
+   },
+   {
+    "action": "study_slow",
+    "scenario_action": "request_slow",
+    "label": "천천히 가면서 점검하기",
+    "detail": "저속으로 주행하며 상태를 확인해요."
+   },
+   {
+    "action": "study_safe_stop",
+    "scenario_action": "request_safe_stop",
+    "label": "갓길에 세우고 점검하기",
+    "detail": "비어 있는 정차 공간을 확인한 뒤 이동해요."
+   }
+  ],
+  "cargo": [
+   {
+    "action": "study_inspect",
+    "scenario_action": "request_inspect",
+    "label": "물체를 자세히 확인하기",
+    "detail": "정지 후 전방 화면을 확대해 살펴봐요."
+   },
+   {
+    "action": "study_avoid",
+    "scenario_action": "request_avoid",
+    "label": "피해서 지나가기 요청",
+    "detail": "왼쪽에 공간이 있을 때 천천히 회피해요."
+   },
+   {
+    "action": "study_stop",
+    "scenario_action": "request_stop",
+    "label": "멈춰서 기다리기",
+    "detail": "물체 앞에서 간격을 두고 기다려요."
+   },
+   {
+    "action": "study_delegate",
+    "scenario_action": "request_delegate",
+    "label": "차량 판단에 맡기기",
+    "detail": "정지 후 주변을 확인하고 회피를 진행해요."
+   }
+  ]
+ },
+ "copy": {
+  "congestion": [
+   "앞이 서행 차량으로 막혀 있어요",
+   "앞차와 오른쪽 대형차는 느리게 가고, 왼쪽 차로에는 빠른 차량이 이어지고 있어요.",
+   "앞차와 거리를 유지하고 왼쪽 차로의 진입 공간을 확인하고 있어요."
+  ],
+  "fog": [
+   "짙은 안개 때문에 천천히 가고 있어요",
+   "안개가 짙어져 전방 시야가 제한되고 있어요.",
+   "속도를 낮추고 앞차와의 간격을 유지하고 있어요."
+  ],
+  "night": [
+   "앞차가 차선을 넘나들고 있어요",
+   "앞 차량이 좌우로 흔들리며 차선 경계에 접근하고 있어요.",
+   "앞차의 움직임을 살피고 차로를 유지하며 따라가고 있어요."
+  ],
+  "yield": [
+   "보행자가 건너지 않고 서 있어요",
+   "횡단보도 옆 보행자가 손짓하며 앞뒤로 움직이고 있어요.",
+   "횡단 여부를 확인하며 완전히 멈춰 기다리고 있어요."
+  ],
+  "carpool": [
+   "차 밖에서 누군가 문 쪽으로 다가왔어요",
+   "동승자를 기다리는 중 한 사람이 다가와 창문을 두드리고 있어요.",
+   "문을 닫은 채 대기하고 주변 사람과 이동 공간을 확인하고 있어요."
+  ],
+  "rattle": [
+   "차 바깥에서 반복적인 소리가 들려요",
+   "주행 중 차체 바깥에서 긁히거나 떨리는 듯한 소리가 들려요.",
+   "현재 주행 상태를 확인하고 있어요. 소리의 원인은 아직 확인되지 않았어요."
+  ],
+  "cargo": [
+   "전방에 낙하물이 있어 감속하고 있어요",
+   "앞 트럭에서 떨어진 물체가 도로에 남아 있어요.",
+   "물체 앞에서 감속하고 통과할 공간을 확인하고 있어요."
+  ]
+ },
+ "classic": {
+  "night": [
+   {
+    "action": "study_horn",
+    "label": "클락션",
+    "detail": "경적을 한 번 짧게 울리고 앞차의 반응을 살핍니다."
+   },
+   {
+    "action": "study_distance",
+    "label": "차간 거리 넓히기",
+    "detail": "서서히 감속해 앞차와의 간격을 넓힙니다."
+   },
+   {
+    "action": "study_wait",
+    "label": "그냥 유지",
+    "detail": "현재 주행 판단과 차간 거리를 유지합니다."
+   }
+  ],
+  "congestion": [
+   {
+    "action": "study_highbeam",
+    "label": "하이빔",
+    "detail": "상향등을 두 번 켰다가 끄고 앞차의 반응을 살핍니다."
+   },
+   {
+    "action": "study_horn",
+    "label": "클락션",
+    "detail": "경적을 한 번 짧게 울리고 앞차의 반응을 살핍니다."
+   },
+   {
+    "action": "study_distance",
+    "label": "차간 거리 넓히기",
+    "detail": "서서히 감속해 앞차와의 간격을 넓힙니다."
+   },
+   {
+    "action": "study_wait",
+    "label": "그냥 유지",
+    "detail": "현재 주행 판단과 차간 거리를 유지합니다."
+   }
+  ],
+  "fog": [
+   {
+    "action": "study_inspect",
+    "label": "현재 안전조치 확인",
+    "detail": "현재 속도와 앞차 간격, 감속 상태를 확인합니다."
+   },
+   {
+    "action": "study_distance",
+    "label": "더 감속하고 거리 확보",
+    "detail": "서서히 감속하며 앞차와의 간격을 더 넓힙니다."
+   },
+   {
+    "action": "study_stop_request",
+    "label": "안전한 곳에 정차 요청",
+    "detail": "정차 공간이 확인되지 않으면 우선 감속하며 주행합니다."
+   }
+  ]
+ }
+}

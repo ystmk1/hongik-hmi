@@ -1,0 +1,51 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "outputDirectory": "dist",
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "rewrites": [
+    {
+      "source": "/admin",
+      "destination": "/admin.html"
+    },
+    {
+      "source": "/drive",
+      "destination": "/drive.html"
+    },
+    {
+      "source": "/navigation/classic",
+      "destination": "/navigation/classic.html"
+    },
+    {
+      "source": "/frame.jpg",
+      "destination": "/demo/frame.svg"
+    },
+    {
+      "source": "/stream",
+      "destination": "/demo/frame.svg"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache"
+        }
+      ]
+    },
+    {
+      "source": "/vendor/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=604800"
+        }
+      ]
+    }
+  ],
+  "buildCommand": "node scripts/build.mjs",
+  "installCommand": "",
+  "framework": null
+}

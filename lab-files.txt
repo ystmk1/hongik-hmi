@@ -1,0 +1,32 @@
+# Files mirrored from jungmin5589-del/hongik-carla-hmi (same paths).
+# scripts/import_from_lab.py copies these in, scripts/export_to_lab.py copies them back.
+course_ui/index.html
+course_ui/cockpit.js
+course_ui/cockpit.css
+course_ui/research-events.css
+course_ui/multimodal.css
+course_ui/hongik-assistant.css
+course_ui/vendor/
+native_home.html
+research_admin.html
+drive.html
+navigation.js
+navigation.css
+navigation_boot.js
+map_context.js
+midterm_panel.js
+midterm_panel.css
+midterm_audio.js
+hongik_panel.js
+language.js
+participant_setup.js
+feedback_voice.js
+recorded_cabin.js
+driving_sound.js
+driving_sound.css
+exterior_sound.js
+underbody_sound.js
+scene_audio.js
+city_study.js
+city_study.css
+pedestrian_ui.js
