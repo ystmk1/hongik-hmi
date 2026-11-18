@@ -14,6 +14,8 @@
 const query=new URLSearchParams(location.search);
 if(query.get('backend')==='live'||window.HMI_LIVE_BACKEND){return}
 const realFetch=window.fetch.bind(window);
+// Keep WebGL pixels readable so page-capture tools (HTML to Figma) get the 3D road, not a blank canvas.
+{const getContext=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,attrs){if(/webgl/.test(type))attrs={...attrs,preserveDrawingBuffer:true};return getContext.call(this,type,attrs)}}
 const DATA='/demo/data/';
 let study=null;const studyReady=realFetch(DATA+'study.json').then(r=>r.json()).then(d=>{study=d});
 
@@ -58,7 +60,7 @@ if(!sim)sim=blankSim();
 function saveSim(){try{sessionStorage.setItem(SESSION,JSON.stringify(sim))}catch{}}
 function prepare(profile,condition='B',presentation='midterm',language='ko'){
  const t=TUNING[profile];
- Object.assign(sim,{phase:'preparing',mode:'paused',profile,condition,presentation,language,error:null,preparingAt:Date.now(),frames:0,
+ Object.assign(sim,{phase:'preparing',frozen:false,mode:'paused',profile,condition,presentation,language,error:null,preparingAt:Date.now(),frames:0,
   session:uid(),elapsed:0,onset:false,onsetAt:null,completed:false,completion_reason:null,dialog_open:false,horn_count:0,
   speed:0,lead_speed:0,ego_s:120,offset:0,target_offset:0,lead_s:120+t.gap+4.6,lead_lateral:0,gap:t.gap,desired_gap:t.gap,
   feedback:'',last_action:null,action_complete:false,highbeam_at:null,cargo_hits:0,
@@ -376,12 +378,36 @@ let last=performance.now();
 setInterval(()=>{
  const now=performance.now(),dt=Math.min(.25,(now-last)/1000)*speedFactor;last=now;
  if(sim.phase==='preparing'&&Date.now()-sim.preparingAt>1200){sim.phase='live';sim.frames=3}
+ if(sim.frozen)return;
  const n=Math.max(1,Math.round(speedFactor));for(let i=0;i<n;i++)step(dt/n);
  saveSim();
 },100);
 
+// ?state=<name> opens the navigation frozen in one representative screen state
+// (for design review and page capture). Dialog states still need the UI click:
+// options/confirm open from the 홍익 AI button.
+const STATES={
+ ready:{},
+ driving:{mode:'auto',elapsed:5,speed:62},
+ alert:{mode:'auto',elapsed:14,onset:true,speed:62},
+ countdown:{mode:'auto',elapsed:16,onset:true,speed:62,study:{phase:'queued',action:'horn',pending_at:16},horn:0},
+ result:{mode:'auto',elapsed:24,onset:true,speed:58,study:{phase:'observing',action:'horn',pending_at:16,started_at:19,observed:4,status:'achieved'},horn:1},
+ ending:{mode:'auto',elapsed:40,onset:true,speed:0,completed:true,study:{phase:'complete',action:'horn',pending_at:16,started_at:19,observed:12,stopped:1,status:'achieved'},horn:1}};
+const preset=query.get('state');
+if(STATES[preset]&&/^\/navigation/.test(location.pathname)){
+ studyReady.then(()=>{
+  const p=STATES[preset],profile=PROFILES[query.get('profile')]?query.get('profile'):'night';
+  prepare(profile,query.get('condition')==='A'?'A':'B','midterm',query.get('lang')||'ko');
+  Object.assign(sim,{phase:'live',frames:3,frozen:true,mode:p.mode||'paused',elapsed:p.elapsed||0,onset:!!p.onset,onsetAt:p.onset?T().onset:null,
+   speed:p.speed||0,lead_speed:hasLead()?T().lead:0,completed:!!p.completed,completion_reason:p.completed?'action_outcome':null,horn_count:p.horn||0,ego_s:120+(p.elapsed||0)*15});
+  sim.lead_s=sim.ego_s+sim.desired_gap+4.6;sim.gap=sim.desired_gap;
+  if(sim.profile==='night'&&p.onset)sim.lead_lateral=.9;
+  if(p.study){Object.assign(sim.study,p.study);sim.last_action=p.study.action;if(p.study.status){sim.study.summary=RESULT[p.study.action]||'';sim.study.feedback=sim.study.summary}else sim.study.feedback='요청을 준비했어요. 3초 안에 취소할 수 있어요.'}
+  saveSim();
+ });
+}
 // Opening /navigation directly (bookmark, shared link) starts a drive instead of waiting forever.
-if(/^\/navigation(?:\/classic)?(?:\.html)?$/.test(location.pathname)&&(sim.phase==='choose'||query.has('profile'))){
+else if(/^\/navigation(?:\/classic)?(?:\.html)?$/.test(location.pathname)&&(sim.phase==='choose'||query.has('profile'))){
  const p=query.get('profile');const presentation=location.pathname.includes('classic')?'classic':'midterm';
  if(!PROFILES[sim.profile]||p||sim.presentation!==presentation)studyReady.then(()=>{prepare(PROFILES[p]?p:sim.profile&&PROFILES[sim.profile]?sim.profile:'night',query.get('condition')==='A'?'A':'B',presentation,query.get('lang')||'ko');sim.phase='live';sim.frames=3;saveSim()});
 }
@@ -394,7 +420,7 @@ window.HMIDemo={
  reset(){sessionStorage.removeItem(SESSION);sim=blankSim();saveSim();location.assign('/')},
  clearRecords(){localStorage.removeItem(LOCAL);location.reload()}
 };
-if(query.get('demobar')!=='0')addEventListener('DOMContentLoaded',()=>{
+if(query.get('demobar')!=='0'&&!STATES[preset])addEventListener('DOMContentLoaded',()=>{
  const bar=document.createElement('div');bar.id='hmi-demo-bar';bar.dataset.noTranslate='true';
  bar.innerHTML='<b>DEMO</b><span>CARLA 없이 모의 데이터로 동작</span><select aria-label="재생 속도"><option value="1">1×</option><option value="2">2×</option><option value="4">4×</option></select><button data-k="skip" type="button">상황 발생으로</button><button data-k="reset" type="button">처음으로</button><button data-k="hide" type="button" aria-label="데모 표시 숨기기">×</button>';
  const css=document.createElement('style');css.textContent='#hmi-demo-bar{position:fixed;left:50%;top:7px;transform:translateX(-50%);z-index:2147483000;display:flex;align-items:center;gap:8px;padding:6px 8px 6px 12px;border-radius:999px;background:rgba(23,33,45,.86);color:#fff;font:12px/1.2 system-ui,sans-serif;box-shadow:0 6px 20px rgba(0,0,0,.18);backdrop-filter:blur(8px)}#hmi-demo-bar b{color:#9fc0ff;letter-spacing:.08em}#hmi-demo-bar span{opacity:.7}#hmi-demo-bar select,#hmi-demo-bar button{font:inherit;color:#fff;background:rgba(255,255,255,.12);border:0;border-radius:999px;padding:5px 10px;cursor:pointer}#hmi-demo-bar select option{color:#000}@media(max-width:700px){#hmi-demo-bar span{display:none}}';

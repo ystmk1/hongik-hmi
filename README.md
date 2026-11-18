@@ -16,6 +16,9 @@ CARLA 시뮬레이터 없이 브라우저에서 바로 화면을 띄우고, Verc
 `/navigation?profile=fog&condition=A` 처럼 주소에 시나리오와 조건을 붙이면 바로 그 상태로 열립니다.
 profile: `congestion`, `night`, `fog`, `yield`, `carpool`, `rattle`, `cargo` / condition: `A`, `B` / 언어: `&lang=en`, `&lang=zh`
 
+`/navigation?state=alert` 처럼 `state`를 붙이면 그 화면 상태에서 멈춘 채로 열립니다(디자인 검토, 피그마 캡처용).
+state: `ready`, `driving`, `alert`, `countdown`, `result`, `ending`. 선택지와 실행 확인 화면은 `alert`에서 홍익 AI 버튼을 눌러 엽니다.
+
 화면 위쪽 가운데의 **DEMO** 막대에서 재생 속도(1×, 2×, 4×), 상황 발생으로 건너뛰기, 처음으로 돌아가기를 쓸 수 있습니다. `?demobar=0`을 붙이면 숨겨집니다.
 
 ## 로컬에서 실행
