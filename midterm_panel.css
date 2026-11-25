@@ -337,3 +337,79 @@ body.passenger-mode.docked #post-drive-survey header{display:none}
 body.passenger-mode.docked #post-drive-survey.paged fieldset{min-height:0}
 body.passenger-mode.docked #post-drive-survey[open]{height:calc(100dvh - var(--paneT) - var(--paneB));box-sizing:border-box}
 body.passenger-mode.docked:has(#post-drive-survey[open]) #research-ending{display:none!important}
+
+/* Docked layout v2 (2026-11-25 second sketch): left is drive and alert, right is information and choices.
+ * Only what the sketch shows stays; everything else on the passenger screen is removed. */
+body.passenger-mode.docked header{background:#ededee}
+body.passenger-mode.docked #hdr-now{font-weight:600}
+/* removed: status pill, cause marker, edge flash, emergency button, trip info, pane heading */
+body.passenger-mode.docked #passenger-status,body.passenger-mode.docked #cause-mark,body.passenger-mode.docked #emergency-stop,body.passenger-mode.docked #pane-title{display:none!important}
+body.passenger-mode.docked.alert-flash::after{display:none}
+/* left: gear, speed, state, lane, alert card */
+body.passenger-mode.docked .gears{font-size:44px!important;letter-spacing:.12em;font-weight:700}
+body.passenger-mode.docked .speed-panel{top:24px;left:36px}
+body.passenger-mode.docked .speed{font-size:150px!important;letter-spacing:-6px}
+body.passenger-mode.docked .unit{font-size:30px!important;margin-top:0}
+body.passenger-mode.docked .visual-state{top:28px;right:32px}
+body.passenger-mode.docked #drive-mode{font-size:40px;font-weight:800}
+body.passenger-mode.docked #lane{font-size:30px;color:#6b7480}
+body.passenger-mode.docked #lane small{font-size:inherit}
+body.passenger-mode.docked #situation-card:not([hidden]){left:28px;right:28px;bottom:24px;padding:28px 32px;text-align:center;background:linear-gradient(#fff6c8,#fffdf3 18%,#fffdf3);border-top:0;border-radius:20px;box-shadow:0 10px 30px #1f2a3b14}
+body.passenger-mode.docked #situation-card .sc-top{display:block}
+#sc-title{display:block;color:#4a4f57;font:600 18px Pretendard,Arial,sans-serif}
+body.passenger-mode.docked #sc-body{margin:12px 0 20px;font:800 26px/1.5 Pretendard,Arial,sans-serif}
+body.passenger-mode.docked #sc-open{width:min(420px,100%);min-height:64px;padding:0;border-radius:32px;background:#6b87ec;color:#fff;font:700 20px Pretendard,Arial,sans-serif}
+/* right: plain white area, no card */
+body.passenger-mode.docked .map-panel{background:#fff}
+body.passenger-mode.docked #option-pane{padding:0}
+body.passenger-mode.docked #option-pane .pane-card{inset:0;padding:56px;border-radius:0;align-items:center;text-align:center;background:#fff}
+body.passenger-mode.docked #pane-copy{color:#9aa3ae;font-size:24px}
+body.passenger-mode.docked #research-dialog:not([hidden]),body.passenger-mode.docked #research-ending:not([hidden]),body.passenger-mode.docked #passenger-ready:not([hidden]),body.passenger-mode.docked #post-drive-survey[open]{left:40%!important;right:0!important;top:var(--hdr)!important;bottom:var(--ftr)!important;border-radius:0!important;background:#fff!important}
+body.passenger-mode.docked #post-drive-survey[open]{height:calc(100dvh - var(--hdr) - var(--ftr));padding:48px 56px}
+body.passenger-mode.docked #passenger-ready .ready-card{border-radius:0;padding:56px}
+body.passenger-mode.docked #research-ending:not([hidden]){padding:56px!important}
+/* panel: back, information, choices */
+body.passenger-mode.docked #research-dialog>header{position:relative;min-height:0;padding:36px 56px 0;border:0;background:none}
+body.passenger-mode.docked #research-dialog>header .hongik-panel-name{display:none}
+body.passenger-mode.docked #research-close{width:auto!important;height:48px!important;min-height:48px!important;padding:0!important;background:none!important;border-radius:0!important;color:#8a929c;font:500 24px Pretendard,Arial,sans-serif!important}
+body.passenger-mode.docked .research-dialog-content{padding:16px 56px 32px!important}
+body.passenger-mode.docked .midterm-explanation>*{display:none!important}
+body.passenger-mode.docked .midterm-explanation>#research-caption,body.passenger-mode.docked .midterm-explanation>#research-title,body.passenger-mode.docked .midterm-explanation>.midterm-info-card{display:block!important}
+body.passenger-mode.docked.request-active .midterm-explanation>.midterm-info-card{display:none!important}
+body.passenger-mode.docked #research-caption{margin:0;color:#6b7480;font-size:20px}
+body.passenger-mode.docked #research-title{margin:4px 0 20px;color:#2f5fd8;font-size:36px;font-weight:800;letter-spacing:-.03em}
+body.passenger-mode.docked .midterm-explanation>.midterm-info-card{margin:0 0 16px!important;padding:0 0 0 32px!important;background:none!important;border:0!important}
+body.passenger-mode.docked .midterm-info-card h3{margin:0 0 4px;color:#6b7480;font-size:18px;font-weight:500}
+body.passenger-mode.docked .midterm-info-card p{margin:0;font-size:24px!important;font-weight:750;color:#1f2a3b}
+body.passenger-mode.docked #research-options-label{display:block!important;margin:28px 0 14px;color:#6b7480;font-size:20px}
+body.passenger-mode.docked #research-options-label[hidden]{display:none!important}
+body.passenger-mode.docked #options-note,body.passenger-mode.docked .research-option .effect,body.passenger-mode.docked #research-maintain .effect,body.passenger-mode.docked #request-steps,body.passenger-mode.docked #request-preview,body.passenger-mode.docked #research-feedback,body.passenger-mode.docked .research-voice,body.passenger-mode.docked #situation-metrics{display:none!important}
+body.passenger-mode.docked #research-options:not([hidden]){grid-template-columns:repeat(3,1fr);gap:16px}
+body.passenger-mode.docked .research-option{min-height:128px!important;padding:22px 24px!important;border:0!important;border-radius:20px!important;background:#f4f6f9!important;text-align:left;align-content:start}
+body.passenger-mode.docked .research-option strong{color:#2f5fd8;font-size:24px;font-weight:800}
+body.passenger-mode.docked .research-option small{color:#4a4f57;font-size:18px}
+body.passenger-mode.docked .research-option:active,body.passenger-mode.docked .research-option.suggested{background:#6b87ec!important;box-shadow:none!important}
+body.passenger-mode.docked .research-option:active *,body.passenger-mode.docked .research-option.suggested *{color:#fff!important}
+body.passenger-mode.docked #research-maintain:not([hidden]){display:flex;align-items:center;justify-content:center;width:100%;min-height:76px;margin-top:16px;border:0;border-radius:20px;background:#f4f6f9;color:#4a4f57;font-size:22px}
+body.passenger-mode.docked #research-maintain small{display:none}
+body.passenger-mode.docked #research-maintain strong{font-weight:500;font-size:22px}
+/* direct request: one card in the grid, opens the request line in place of the choices */
+body.passenger-mode.docked #experiment-request{display:none!important}
+body.passenger-mode.docked.direct-mode #experiment-request:not([hidden]){display:block!important;margin:0;padding:0;border:0}
+body.passenger-mode.docked.direct-mode #research-options,body.passenger-mode.docked.direct-mode #research-maintain,body.passenger-mode.docked.direct-mode #research-options-label{display:none!important}
+body.passenger-mode.docked.direct-mode .midterm-explanation>.midterm-info-card{display:none!important}
+body:not(.docked) #direct-card{display:none}
+/* footer: stop request left, climate and music centre, support right */
+body.passenger-mode.docked footer{background:#ededee}
+body.passenger-mode.docked #footer-stop{order:1;border-radius:38px;background:#f2645c}
+body.passenger-mode.docked #footer-help{order:9;margin-left:auto;border-radius:38px}
+body.passenger-mode.docked #emergency-stop{margin:0}
+body.passenger-mode.docked #situation-card:not([hidden]){display:flex!important;flex-direction:column;align-items:center}
+body.passenger-mode.docked #situation-card .sc-top{display:contents}
+body.passenger-mode.docked #sc-title{order:1}body.passenger-mode.docked #sc-body{order:2}body.passenger-mode.docked #sc-open{order:3}
+body.passenger-mode.docked #pane-open{display:none!important}
+body.passenger-mode.docked #research-dialog .midterm-explanation>#research-caption:not(#_a):not(#_b),body.passenger-mode.docked #research-dialog .midterm-explanation>#research-title:not(#_a):not(#_b),body.passenger-mode.docked #research-dialog .midterm-explanation>.midterm-info-card:not(#_a):not(#_b){display:block!important}
+body.passenger-mode.docked.request-active #research-dialog .midterm-explanation>.midterm-info-card:not(#_a):not(#_b),body.passenger-mode.docked.direct-mode #research-dialog .midterm-explanation>.midterm-info-card:not(#_a):not(#_b){display:none!important}
+body.passenger-mode.docked #research-maintain.research-option{min-height:76px!important;padding:0 24px!important}
+body.passenger-mode.docked #research-maintain.research-option strong{color:#4a4f57}
+body.passenger-mode.docked #experiment-stt,body.passenger-mode.docked #experiment-request form label,body.passenger-mode.docked #experiment-result{display:none!important}

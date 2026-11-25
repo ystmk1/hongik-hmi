@@ -535,7 +535,7 @@ const hhmm=d=>String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).pa
 const header=document.querySelector('header');
 const now=document.createElement('strong');now.id='hdr-now';const eta=document.createElement('strong');eta.id='hdr-eta';header?.append(now,eta);
 const card=document.createElement('section');card.id='situation-card';card.hidden=true;card.setAttribute('aria-live','polite');
-card.innerHTML='<div class="sc-top"><strong id="sc-title"></strong><button type="button" id="sc-open">주행 옵션 선택하기 <span aria-hidden="true">›</span></button></div><p id="sc-body"></p>';
+card.innerHTML='<div class="sc-top"><small id="sc-title"></small><button type="button" id="sc-open">가능한 액션 보기</button></div><p id="sc-body"></p>';
 document.querySelector('.visualization')?.append(card);
 const pane=document.createElement('section');pane.id='option-pane';
 pane.innerHTML='<h2 id="pane-title">차량 주행 옵션 선택하기</h2><div class="pane-card"><p id="pane-copy"></p><button type="button" id="pane-open" class="research-primary" hidden>주행 옵션 보기</button></div>';
@@ -550,6 +550,7 @@ $('sc-open').onclick=open;$('pane-open').onclick=open;
 help.onclick=()=>$('research-fixed-help')?.click();
 stop.onclick=()=>$('research-fixed-stop')?.click();
 music.onclick=()=>$('library-open')?.click();
+$('research-close')?.addEventListener('click',e=>{if(body.classList.contains('direct-mode')){e.stopImmediatePropagation();body.classList.remove('direct-mode')}},true);
 function tick(){now.textContent='현재 시각 '+hhmm(new Date())}tick();setInterval(tick,15000);
 function update(d){
  if(!body.classList.contains('passenger-mode'))return;
@@ -563,10 +564,15 @@ function update(d){
  const waiting=!$('passenger-ready')?.hidden,ending=!$('research-ending')?.hidden;
  const survey=Boolean($('post-drive-survey')?.open),st=ev?.study?.phase,running=!off&&['queued','applying','observing','stopping'].includes(st);
  $('pane-title').hidden=off&&!waiting&&!ending&&!survey;$('pane-title').textContent=survey?'주행 후 설문':waiting?'출발 준비':ending?'주행 결과':'차량 주행 옵션 선택하기';
- $('pane-copy').textContent=off?'차가 경로를 따라 주행하고 있어요':active?'주행 상황이 바뀌었어요. 원하는 주행 방식을 고를 수 있어요':'지금은 차가 알아서 주행하고 있어요. 상황이 생기면 여기에서 주행 옵션을 고를 수 있어요';
- if(running){$('pane-copy').textContent=$('passenger-status')?.textContent||'요청을 진행하고 있어요';$('pane-open').textContent='진행 상황 보기'}else $('pane-open').textContent='주행 옵션 보기';
+ $('pane-copy').textContent=off||!active?'차가 경로를 따라 주행하고 있어요':'가능한 액션을 여기에서 고를 수 있어요';
+ if(running){$('pane-copy').textContent=$('passenger-status')?.textContent||'요청을 진행하고 있어요';$('pane-open').textContent='진행 상황 보기'}else $('pane-open').textContent='가능한 액션 보기';
  $('pane-open').hidden=!(active||running)||dialogOpen;
  pane.dataset.covered=String(dialogOpen||waiting||ending||survey);
+ const lane=$('lane');if(lane&&lane.innerHTML.includes('왼쪽부터'))lane.innerHTML=lane.innerHTML.replace(' · 왼쪽부터','');
+ const back=$('research-close');if(back&&back.dataset.back!=='1'){back.dataset.back='1';back.textContent='‹ 뒤로 가기';back.setAttribute('aria-label','뒤로 가기')}
+ const req=$('experiment-request'),opts=$('research-options');
+ if(opts&&req&&!req.hidden&&!opts.querySelector('#direct-card')){const c=document.createElement('button');c.type='button';c.id='direct-card';c.className='research-option';c.dataset.unavailable='false';c.innerHTML='<strong>직접 명령하기</strong><small>말이나 글로 요청해요</small>';c.onclick=()=>body.classList.add('direct-mode');opts.append(c)}
+ if(!dialogOpen||opts?.hidden&&!body.classList.contains('typing'))body.classList.remove('direct-mode');
  $('footer-track').textContent=$('track-title')?.textContent||'음악을 선택하세요';
  const fh=$('research-fixed-help'),fs=$('research-fixed-stop');
  help.disabled=!fh||fh.disabled||fh.hidden;stop.disabled=!fs||fs.disabled||fs.hidden;
