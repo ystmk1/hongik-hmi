@@ -72,7 +72,7 @@ async function nativeNavigationHtml(midterm) {
 
 // Generated files: served path -> () => text
 export const GENERATED = {
-  '/index.html': async () => withMock((await read('native_home.html')).replace('<main>', '<script src="/language.js"></script><script defer src="/participant-setup.js"></script><main><p><a href="/experiment">AI OFF / ON experiment</a></p>')),
+  '/index.html': async () => withMock((await read('native_home.html')).replace('<main>', '<script src="/language.js"></script><script defer src="/participant-setup.js"></script><main>')),
   '/experiment.html': async () => withMock(await read('experiment.html')),
   '/navigation.html': async () => withMock(await nativeNavigationHtml(true)),
   '/navigation/classic.html': async () => withMock(await nativeNavigationHtml(false)),
