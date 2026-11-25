@@ -536,7 +536,7 @@ const header=document.querySelector('header');
 const now=document.createElement('strong');now.id='hdr-now';const eta=document.createElement('strong');eta.id='hdr-eta';header?.append(now,eta);
 const card=document.createElement('section');card.id='situation-card';card.hidden=true;card.setAttribute('aria-live','polite');
 card.innerHTML='<div class="sc-top"><small id="sc-title"></small><button type="button" id="sc-open">가능한 액션 보기</button></div><p id="sc-body" class="ko-subtitle"></p>';
-document.querySelector('.visualization')?.append(card);
+document.querySelector('.visualization')?.append(card);card.addEventListener('animationend',()=>window.KoType?.refresh?.());
 const pane=document.createElement('section');pane.id='option-pane';
 pane.innerHTML='<h2 id="pane-title">차량 주행 옵션 선택하기</h2><div class="pane-card"><p id="pane-copy" class="ko-subtitle"></p><button type="button" id="pane-open" class="research-primary" hidden>주행 옵션 보기</button></div>';
 document.querySelector('.map-panel')?.append(pane);
@@ -551,7 +551,7 @@ help.onclick=()=>$('research-fixed-help')?.click();
 stop.onclick=()=>$('research-fixed-stop')?.click();
 music.onclick=()=>$('library-open')?.click();
 $('research-close')?.addEventListener('click',e=>{if(body.classList.contains('direct-mode')){e.stopImmediatePropagation();body.classList.remove('direct-mode')}},true);
-function setSub(el,text){if(el&&el.dataset.raw!==text){el.dataset.raw=text;el.textContent=text}}
+function setSub(el,text){if(el&&el.dataset.raw!==text){el.dataset.raw=text;el.textContent=text;requestAnimationFrame(()=>window.KoType?.refresh?.())}}
 function tick(){now.textContent='현재 시각 '+hhmm(new Date())}tick();setInterval(tick,15000);
 function update(d){
  if(!body.classList.contains('passenger-mode'))return;

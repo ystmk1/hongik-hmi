@@ -227,7 +227,7 @@ body.passenger-mode #research-notice{background:#fff}
 #request-preview svg{width:100%!important;height:120px!important}
 
 /* Docked layout (2026-11-25 sketch): header time and arrival, drive view left, option pane right, no pop-ups, no scrolling */
-body.passenger-mode.docked{--u:min(calc(100vw / 1920),calc(100vh / 1080));--hdr:calc(64*var(--u));--ftr:calc(96*var(--u));--paneL:calc(40% + calc(48*var(--u)));--paneT:calc(188*var(--u));--paneB:calc(128*var(--u));overflow:hidden}
+body.passenger-mode.docked{--ui-scale:.85;--u:calc(min(calc(100vw / 1920),calc(100vh / 1080)) * var(--ui-scale));--hdr:calc(64*var(--u));--ftr:calc(96*var(--u));--paneL:calc(40% + calc(48*var(--u)));--paneT:calc(188*var(--u));--paneB:calc(128*var(--u));overflow:hidden}
 body.passenger-mode.docked header{height:var(--hdr);padding:0 calc(28*var(--u));background:#f5f6f8}
 body.passenger-mode.docked header .status-left,body.passenger-mode.docked header .top-right{display:none!important}
 #hdr-now,#hdr-eta{display:none}
@@ -436,3 +436,12 @@ body.passenger-mode.docked #situation-card:has(#sc-open[hidden]) #sc-body{margin
 /* ko-typeset subtitles measure their own width, so keep it fixed to the container */
 body.passenger-mode.docked #sc-body{align-self:stretch}
 body.passenger-mode.docked #pane-copy{align-self:center;width:min(calc(620*var(--u)),100%)}
+/* alignment pass: label and value rows share one baseline and size, one left edge per pane, matching outer margins */
+body.passenger-mode.docked #passenger-ready dl,body.passenger-mode.docked #ending-summary-list{align-items:baseline;gap:calc(14*var(--u)) calc(28*var(--u));font-size:calc(22*var(--u));line-height:1.5}
+body.passenger-mode.docked #passenger-ready dt,body.passenger-mode.docked #passenger-ready dd,body.passenger-mode.docked #ending-summary-list dt,body.passenger-mode.docked #ending-summary-list dd{font-size:inherit!important;line-height:inherit!important;margin:0;padding:0}
+body.passenger-mode.docked .midterm-explanation>.midterm-info-card{padding-left:0!important}
+body.passenger-mode.docked>header{padding:0 calc(28*var(--u))!important}
+body.passenger-mode.docked>footer{padding:0 calc(28*var(--u))!important}
+body.passenger-mode.docked .speed-panel{left:calc(28*var(--u))!important}
+#survey-pager button{margin:0!important}
+body.passenger-mode.docked .visual-state{right:calc(28*var(--u))!important}
