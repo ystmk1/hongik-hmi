@@ -432,7 +432,7 @@ function demoTracks(){
  if(!demoAudioUrl){const rate=3000,secs=204,n=rate*secs,buf=new ArrayBuffer(44+n),v=new DataView(buf),w=(o,t)=>{for(let i=0;i<t.length;i++)v.setUint8(o+i,t.charCodeAt(i))};
   w(0,'RIFF');v.setUint32(4,36+n,true);w(8,'WAVE');w(12,'fmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,rate,true);v.setUint32(28,rate,true);v.setUint16(32,1,true);v.setUint16(34,8,true);w(36,'data');v.setUint32(40,n,true);new Uint8Array(buf,44).fill(128);
   demoAudioUrl=URL.createObjectURL(new Blob([buf],{type:'audio/wav'}))}
- return [['새벽 고속도로','Demo Ensemble','linear-gradient(135deg,#ff8a5b,#ff3d6e)'],['City Lights','Demo Trio','linear-gradient(135deg,#5b8cff,#7b4dff)'],['한강 드라이브','Demo Ensemble','linear-gradient(135deg,#34c9a3,#1d8fe1)'],['Slow Lane','Demo Quartet','linear-gradient(135deg,#ffc24b,#ff7a3d)'],['밤의 터널','Demo Trio','linear-gradient(135deg,#3b4257,#8a93a6)']].map(([title,artist,color],i)=>({id:'demo-'+i,title,artist,album:'데모 앨범',color,url:demoAudioUrl,available:true}))}
+ return [['새벽 고속도로','Demo Ensemble','linear-gradient(135deg,#f7c1b3,#e58b9d)'],['City Lights','Demo Trio','linear-gradient(135deg,#b9c5f7,#8592e6)'],['한강 드라이브','Demo Ensemble','linear-gradient(135deg,#a9dfcf,#62b3a2)'],['Slow Lane','Demo Quartet','linear-gradient(135deg,#f6dba6,#e7ad72)'],['밤의 터널','Demo Trio','linear-gradient(135deg,#b3b9c7,#6f788b)']].map(([title,artist,color],i)=>({id:'demo-'+i,title,artist,album:'데모 앨범',color,url:demoAudioUrl,available:true}))}
 const json=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:{'Content-Type':'application/json; charset=utf-8'}});
 async function route(url,init){
  const path=url.pathname,method=(init?.method||'GET').toUpperCase();

@@ -54,7 +54,7 @@
 <script type="module">
 import * as THREE from '/vendor/three.module.js';
 const $=id=>document.getElementById(id),host=$('scene');
-const scene=new THREE.Scene();scene.background=new THREE.Color('#f5f6f7');scene.fog=new THREE.Fog('#f5f6f7',80,170);
+const scene=new THREE.Scene();scene.background=new THREE.Color('#ffffff');scene.fog=new THREE.Fog('#ffffff',70,165);
 const camera=new THREE.PerspectiveCamera(43,1,.1,250);let topView=false;
 const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.setClearColor(0xf5f6f7);host.appendChild(renderer.domElement);
 scene.add(new THREE.HemisphereLight(0xffffff,0xc9cdd2,2.5));const sun=new THREE.DirectionalLight(0xffffff,2.6);sun.position.set(-25,50,10);scene.add(sun);
