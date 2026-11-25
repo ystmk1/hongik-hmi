@@ -225,3 +225,115 @@ body.passenger-mode #research-launch:not(.has-update) .wave-label{opacity:0!impo
 body.passenger-mode #research-launch.has-update .wave-label{left:24%;bottom:156px}
 body.passenger-mode #research-notice{background:#fff}
 #request-preview svg{width:100%!important;height:120px!important}
+
+/* Docked layout (2026-11-25 sketch): header time and arrival, drive view left, option pane right, no pop-ups, no scrolling */
+body.passenger-mode.docked{--hdr:64px;--ftr:96px;--paneL:calc(40% + 48px);--paneT:188px;--paneB:128px;overflow:hidden}
+body.passenger-mode.docked header{height:var(--hdr);padding:0 28px;background:#f5f6f8}
+body.passenger-mode.docked header .status-left,body.passenger-mode.docked header .top-right{display:none!important}
+#hdr-now,#hdr-eta{display:none}
+body.passenger-mode.docked #hdr-now{display:block;font:700 24px Pretendard,Arial,sans-serif;letter-spacing:-.02em;color:#1f2a3b}
+body.passenger-mode.docked #hdr-eta{display:block;position:absolute;left:50%;transform:translateX(-50%);font:700 24px Pretendard,Arial,sans-serif;letter-spacing:-.02em;color:#1f2a3b}
+body.passenger-mode.docked main{height:calc(100dvh - var(--hdr) - var(--ftr))!important;grid-template-columns:40% 60%!important}
+/* left: gear, speed, state and lane come back; the situation card sits at the bottom */
+body.passenger-mode.docked .gears{display:block!important;font-size:24px;letter-spacing:.2em;word-spacing:0;color:#9aa3ae}
+body.passenger-mode.docked .gears b{color:#1f2a3b}
+body.passenger-mode.docked .speed-panel{top:28px;left:40px}
+body.passenger-mode.docked .speed{font-size:96px!important}
+body.passenger-mode.docked .unit{font-size:18px!important}
+body.passenger-mode.docked .visual-state{display:block!important;top:32px;right:32px;color:#5b6678;font-size:20px!important;line-height:1.5}
+body.passenger-mode.docked #drive-mode,body.passenger-mode.docked #lane{display:block!important}
+body.passenger-mode.docked #drive-mode{color:#1f2a3b;font-size:28px;font-weight:750}
+body.passenger-mode.docked #passenger-trip,body.passenger-mode.docked .speed-limit,body.passenger-mode.docked .view-tools,body.passenger-mode.docked #scene-source{display:none!important}
+#situation-card{display:none}
+body.passenger-mode.docked #situation-card:not([hidden]){display:block;position:absolute;z-index:4;left:32px;right:32px;bottom:104px;padding:22px 28px 24px;border-radius:20px;background:#fffdf5;border-top:4px solid #f5d34f;box-shadow:0 10px 30px #1f2a3b14}
+#situation-card .sc-top{display:flex;align-items:center;justify-content:space-between;gap:16px}
+#sc-title{font:700 20px Pretendard,Arial,sans-serif;color:#5b4a12}
+#sc-open{min-height:56px;padding:0 4px 0 16px;border:0;background:none;color:#2f5fd8;font:700 20px Pretendard,Arial,sans-serif;cursor:pointer}
+#sc-open[hidden]{display:none}
+#sc-body{margin:8px 0 0;color:#1f2a3b;font:600 22px/1.5 Pretendard,Arial,sans-serif}
+/* the status pill under the card */
+body.passenger-mode.docked #passenger-status{position:fixed;top:auto;left:20%;bottom:calc(var(--ftr) + 24px);transform:translateX(-50%);height:56px!important;padding:0 26px;border-radius:28px;background:#6b7480;color:#fff!important;font-size:20px;z-index:5}
+body.passenger-mode.docked #passenger-status[data-state="situation"]{background:#a8650f}
+body.passenger-mode.docked #passenger-status[data-state="request"]{background:#2f5fd8}
+body.passenger-mode.docked #passenger-status[data-state="normal"]{background:#2d7a4f}
+/* right: the option pane replaces the map, route card and music dock */
+body.passenger-mode.docked .map-panel{background:#f5f6f8}
+body.passenger-mode.docked .map-panel>*:not(#option-pane),body.passenger-mode.docked .music-dock{display:none!important}
+#option-pane{display:none}
+body.passenger-mode.docked #option-pane{display:block;position:absolute;inset:0;padding:40px 48px 32px}
+#pane-title{margin:0 0 20px;color:#2f5fd8;font:750 32px Pretendard,Arial,sans-serif;letter-spacing:-.03em;line-height:44px}
+#pane-title[hidden]{visibility:hidden;display:block}
+#option-pane .pane-card{position:absolute;left:48px;right:48px;top:var(--paneT);bottom:32px;top:124px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:24px;padding:48px;border-radius:24px;background:#fff;box-sizing:border-box}
+#pane-copy{max-width:620px;margin:0;color:#5b6678;font:600 24px/1.6 Pretendard,Arial,sans-serif}
+#pane-open{min-height:80px;padding:0 40px;border:0;border-radius:16px;background:#3e6ae1;color:#fff;font:700 22px Pretendard,Arial,sans-serif;cursor:pointer}
+#pane-open[hidden]{display:none}
+#option-pane[data-covered="true"] .pane-card{visibility:hidden}
+/* pop-ups dock into the pane card */
+body.passenger-mode.docked #research-dialog:not([hidden]),body.passenger-mode.docked #research-ending:not([hidden]),body.passenger-mode.docked #passenger-ready:not([hidden]){position:fixed!important;left:var(--paneL)!important;right:48px!important;top:var(--paneT)!important;bottom:var(--paneB)!important;width:auto!important;height:auto!important;max-width:none!important;transform:none!important;margin:0!important;border:0!important;border-radius:24px!important;box-shadow:none!important;background:#fff;box-sizing:border-box;overflow:hidden!important;animation:none!important}
+body.passenger-mode.docked #passenger-ready{inset:auto;display:block;z-index:44}
+body.passenger-mode.docked #passenger-ready .ready-card{width:100%;height:100%;box-shadow:none;border-radius:24px;padding:48px;display:flex;flex-direction:column;justify-content:center}
+body.passenger-mode.docked #research-ending{z-index:44;padding:48px!important;display:flex!important;flex-direction:column;justify-content:center}
+body.passenger-mode.docked #research-ending[hidden]{display:none!important}
+body.passenger-mode.docked #research-ending-close{display:none}
+body.passenger-mode.docked #research-ending h2{font-size:32px}
+body.passenger-mode.docked #research-dialog:not([hidden]){display:flex!important;flex-direction:column}
+body.passenger-mode.docked #research-dialog>header{min-height:64px;padding:0 16px 0 28px}
+body.passenger-mode.docked .research-dialog-content{overflow:hidden!important;display:block!important;padding:8px 32px 28px!important;flex:1}
+/* explanation lives in the situation card; the pane keeps only feedback and choices */
+body.passenger-mode.docked .midterm-explanation>*:not(#research-feedback):not(#research-inspect-view){display:none!important}
+body.passenger-mode.docked .midterm-explanation{margin:0 0 16px}
+body.passenger-mode.docked #research-feedback{margin:0;padding:14px 18px;font-size:18px}
+body.passenger-mode.docked #research-result-frame,body.passenger-mode.docked #result-caption{display:none!important}
+body.passenger-mode.docked #research-options:not([hidden]){display:grid!important;grid-template-columns:1fr 1fr;gap:16px}
+body.passenger-mode.docked .research-option{min-height:112px!important;padding:16px 20px!important;margin:0!important}
+body.passenger-mode.docked .research-option strong{font-size:20px}
+body.passenger-mode.docked .research-option small,body.passenger-mode.docked .research-option .effect{font-size:16px}
+body.passenger-mode.docked #research-maintain:not([hidden]){margin-top:16px;min-height:88px}
+body.passenger-mode.docked #research-options-label{display:none!important}
+body.passenger-mode.docked #options-note{font-size:18px;margin:0 0 16px}
+/* direct request stays one line; while typing only the understood choice stays visible */
+body.passenger-mode.docked #experiment-request{margin:0 0 20px;padding:0 0 20px}
+body.passenger-mode.docked #experiment-request .experiment-heading,body.passenger-mode.docked #experiment-stage{display:none}
+body.passenger-mode.docked #experiment-stt{font-size:16px}
+body.passenger-mode.docked.typing #research-options .research-option:not(.suggested),body.passenger-mode.docked.typing #research-maintain,body.passenger-mode.docked.typing #options-note{display:none!important}
+body.passenger-mode.docked.typing #research-options:not([hidden]){grid-template-columns:1fr}
+/* countdown fits the pane */
+body.passenger-mode.docked #request-steps{margin:0 0 16px}
+body.passenger-mode.docked #research-countdown{padding:16px 24px}
+body.passenger-mode.docked #countdown-ring{width:120px;height:120px;margin:4px auto}
+body.passenger-mode.docked #countdown-ring svg{width:120px!important;height:120px!important}
+body.passenger-mode.docked #request-preview{margin-top:12px;padding:10px}
+body.passenger-mode.docked #request-preview svg{height:96px!important}
+/* pop-ups that no longer exist on this layout */
+body.passenger-mode.docked #research-notice,body.passenger-mode.docked #research-launch,body.passenger-mode.docked .midterm-fixed,body.passenger-mode.docked #midterm-passive{display:none!important}
+/* footer: support, climate, music, stop */
+body.passenger-mode.docked footer{height:var(--ftr)!important;padding:0 24px!important;justify-content:space-between!important;gap:24px!important}
+body.passenger-mode.docked footer>*{order:5}
+body.passenger-mode.docked #vehicle-settings,body.passenger-mode.docked #music-footer,body.passenger-mode.docked #navigation-footer,body.passenger-mode.docked #voice-footer,body.passenger-mode.docked .footer-source{display:none!important}
+#footer-help,#footer-music,#footer-stop{display:none}
+body.passenger-mode.docked #footer-help{display:block;order:1;min-height:76px;padding:0 32px;border:0;border-radius:16px;background:#3e6ae1;color:#fff;font:700 22px Pretendard,Arial,sans-serif}
+body.passenger-mode.docked .footer-divider{order:2}
+body.passenger-mode.docked #temperature-down{order:3}body.passenger-mode.docked #temperature{order:3;font-size:32px!important}body.passenger-mode.docked #temperature-up{order:3}
+body.passenger-mode.docked #footer-music{display:flex;order:4;align-items:center;gap:16px;min-height:76px;max-width:520px;padding:0 16px;border:0;background:none;color:#1f2a3b;font:500 24px Pretendard,Arial,sans-serif;cursor:pointer}
+#footer-music svg{flex:none;width:36px;height:36px}#footer-track{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body.passenger-mode.docked #emergency-stop{order:6;min-width:0!important;min-height:76px;padding:0 24px!important;border-radius:16px!important}
+body.passenger-mode.docked #footer-stop{display:block;order:7;min-height:76px;padding:0 32px;border:0;border-radius:16px;background:#f2645c;color:#fff;font:700 22px Pretendard,Arial,sans-serif}
+body.passenger-mode.docked #footer-help:disabled,body.passenger-mode.docked #footer-stop:disabled{opacity:.45}
+body.passenger-mode.docked #emergency-stop{background:linear-gradient(90deg,#fbd5d2 var(--hold),#fff var(--hold))!important;border:2px solid #d93a3a!important;color:#c22f2f!important;font:700 20px Pretendard,Arial,sans-serif}
+body.passenger-mode.docked #emergency-stop svg,body.passenger-mode.docked #emergency-stop i{color:#c22f2f}
+body.passenger-mode.docked #research-close{width:56px!important;height:56px!important;min-height:56px!important;border:0!important;border-radius:28px!important;background:#f1f4f8!important;font-size:28px!important;box-shadow:none!important;outline:none}
+body.passenger-mode.docked #passenger-status[data-state="situation"],body.passenger-mode.docked #passenger-status[data-state="normal"]{background:#6b7480}
+body.passenger-mode.docked footer{justify-content:flex-start!important}
+body.passenger-mode.docked footer>.footer-divider:first-of-type{order:2}
+body.passenger-mode.docked footer>.footer-divider:nth-of-type(2){order:4}
+body.passenger-mode.docked #temperature-down{margin-left:auto}
+body.passenger-mode.docked #footer-music{order:5}
+body.passenger-mode.docked #emergency-stop{margin-left:auto}
+body.passenger-mode.docked #temperature{min-width:120px}
+body.passenger-mode.docked #passenger-status svg{display:none}
+body.passenger-mode.docked #post-drive-survey[open]{position:fixed;inset:auto;left:var(--paneL);right:48px;top:var(--paneT);bottom:var(--paneB);width:auto;max-width:none;max-height:none;margin:0;padding:32px 40px;border-radius:24px;box-shadow:none;overflow:hidden}
+body.passenger-mode.docked #post-drive-survey::backdrop{background:transparent}
+body.passenger-mode.docked #post-drive-survey header{display:none}
+body.passenger-mode.docked #post-drive-survey.paged fieldset{min-height:0}
+body.passenger-mode.docked #post-drive-survey[open]{height:calc(100dvh - var(--paneT) - var(--paneB));box-sizing:border-box}
+body.passenger-mode.docked:has(#post-drive-survey[open]) #research-ending{display:none!important}

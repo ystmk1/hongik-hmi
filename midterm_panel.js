@@ -378,7 +378,7 @@ function state(data){
  const phase=ev?.outcome?.phase,study=ev?.study?.phase;
  if(s.completed||phase==='complete'||phase==='stopping'||(Number(n.speed_kph)||0)<.5)return ['stopped',phase==='stopping'?'정차하는 중':'정차 중'];
  if(!off&&(['applying','observing'].includes(phase)||['queued','applying','observing'].includes(study))){const name=window.HongikRequestName?.(ev?.study?.action)||'요청',o=ev?.outcome||{},left=Math.max(0,Math.ceil((o.observe_s||20)-(o.observed_s??o.observed??0)));return ['request',study==='queued'?name+' 실행 준비 중':study==='observing'||phase==='observing'?name+' 실행, 주변 반응 확인 중 '+left+'초':name+' 실행 중']}
- if(!off&&ev?.active)return ['situation','상황 확인 중'+(ev.title?': '+ev.title:'')];
+ if(!off&&ev?.active)return ['situation','상황 확인 중'+(ev.title&&!body.classList.contains('docked')?': '+ev.title:'')];
  return ['normal','정상 주행'];
 }
 function update(data){
@@ -486,7 +486,7 @@ function panel(){
  // 07-3: say what the result frame shows
  const frame=$('research-result-frame');const cap=addOnce('result-caption','<p id="result-caption">실제 주행 화면: 요청한 뒤 주변 차량의 반응</p>',n=>frame?.after(n));cap.hidden=!frame||frame.hidden;
  // 07-1: once the request runs, close the panel and let the status bar carry it
- if(phaseNow==='applying'&&lastPhase==='queued'&&key!=='inspect'&&body.classList.contains('passenger-mode'))window.HongikPanel?.hide();
+ if(phaseNow==='applying'&&lastPhase==='queued'&&key!=='inspect'&&body.classList.contains('passenger-mode')&&!body.classList.contains('docked'))window.HongikPanel?.hide();
  if(['queued','applying'].includes(phaseNow)&&key)requested=key;
  body.classList.toggle('request-active',['queued','applying','observing','stopping'].includes(phaseNow)||out.phase==='complete');
  lastPhase=phaseNow;
@@ -521,5 +521,58 @@ function ending(e,out){
  $('end-result').textContent=out.summary||out.message||'주행을 마쳤어요';
 }
 function install(){const prev=window.CockpitUpdate;window.CockpitUpdate=d=>{prev?.(d);if(!d?.connected)return;if(data?.session?.session_id!==d.session?.session_id){requested='';lastPhase=''}data=d;try{panel()}catch(err){console.warn('screen proposals',err)}}}
+if(document.readyState==='complete')install();else window.addEventListener('load',install);
+})();
+
+/* Docked layout (2026-11-25 sketch): no pop-ups on the passenger screen. Header shows the time and
+ * arrival, the left 40 % is the drive view with the situation card, the right 60 % is the option pane
+ * that hosts the ready step, Hongiki's choices and the end summary. Nothing scrolls. */
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id),body=document.body;
+let data=null;
+const hhmm=d=>String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+const header=document.querySelector('header');
+const now=document.createElement('strong');now.id='hdr-now';const eta=document.createElement('strong');eta.id='hdr-eta';header?.append(now,eta);
+const card=document.createElement('section');card.id='situation-card';card.hidden=true;card.setAttribute('aria-live','polite');
+card.innerHTML='<div class="sc-top"><strong id="sc-title"></strong><button type="button" id="sc-open">주행 옵션 선택하기 <span aria-hidden="true">›</span></button></div><p id="sc-body"></p>';
+document.querySelector('.visualization')?.append(card);
+const pane=document.createElement('section');pane.id='option-pane';
+pane.innerHTML='<h2 id="pane-title">차량 주행 옵션 선택하기</h2><div class="pane-card"><p id="pane-copy"></p><button type="button" id="pane-open" class="research-primary" hidden>주행 옵션 보기</button></div>';
+document.querySelector('.map-panel')?.append(pane);
+const foot=document.querySelector('footer');
+const help=document.createElement('button');help.id='footer-help';help.type='button';help.textContent='고객센터 연결';
+const music=document.createElement('button');music.id='footer-music';music.type='button';music.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h11M3 11h11M3 16h7M18 4v12.5a2.5 2.5 0 1 1-2-2.45V4h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span id="footer-track">음악을 선택하세요</span>';
+const stop=document.createElement('button');stop.id='footer-stop';stop.type='button';stop.textContent='길가에 정차';
+foot?.prepend(help);foot?.append(music,stop);
+const open=()=>{const l=$('research-launch');if(l&&$('research-dialog')?.hidden)l.click()};
+$('sc-open').onclick=open;$('pane-open').onclick=open;
+help.onclick=()=>$('research-fixed-help')?.click();
+stop.onclick=()=>$('research-fixed-stop')?.click();
+music.onclick=()=>$('library-open')?.click();
+function tick(){now.textContent='현재 시각 '+hhmm(new Date())}tick();setInterval(tick,15000);
+function update(d){
+ if(!body.classList.contains('passenger-mode'))return;
+ const ev=d.session?.navigation?.research_event,off=body.classList.contains('experiment-off')||ev?.condition==='A';
+ const complete=d.nurec?.scenario?.completed,m=d.route?.remaining_m,v=Number(d.nurec?.speed_kph)||0;
+ const min=m>0?Math.max(1,Math.round(m/((v>=5?v:30)/3.6)/60)):null;
+ eta.textContent=complete?'도착':min?'도착 예정 시각 '+hhmm(new Date(Date.now()+min*60000)):'';
+ const active=Boolean(ev?.active)&&!off&&!complete,dialogOpen=!$('research-dialog')?.hidden;
+ card.hidden=!active;
+ if(active){$('sc-title').textContent=ev.title||'';$('sc-body').textContent=ev.situation||ev.description||'';$('sc-open').hidden=dialogOpen}
+ const waiting=!$('passenger-ready')?.hidden,ending=!$('research-ending')?.hidden;
+ const survey=Boolean($('post-drive-survey')?.open),st=ev?.study?.phase,running=!off&&['queued','applying','observing','stopping'].includes(st);
+ $('pane-title').hidden=off&&!waiting&&!ending&&!survey;$('pane-title').textContent=survey?'주행 후 설문':waiting?'출발 준비':ending?'주행 결과':'차량 주행 옵션 선택하기';
+ $('pane-copy').textContent=off?'차가 경로를 따라 주행하고 있어요':active?'주행 상황이 바뀌었어요. 원하는 주행 방식을 고를 수 있어요':'지금은 차가 알아서 주행하고 있어요. 상황이 생기면 여기에서 주행 옵션을 고를 수 있어요';
+ if(running){$('pane-copy').textContent=$('passenger-status')?.textContent||'요청을 진행하고 있어요';$('pane-open').textContent='진행 상황 보기'}else $('pane-open').textContent='주행 옵션 보기';
+ $('pane-open').hidden=!(active||running)||dialogOpen;
+ pane.dataset.covered=String(dialogOpen||waiting||ending||survey);
+ $('footer-track').textContent=$('track-title')?.textContent||'음악을 선택하세요';
+ const fh=$('research-fixed-help'),fs=$('research-fixed-stop');
+ help.disabled=!fh||fh.disabled||fh.hidden;stop.disabled=!fs||fs.disabled||fs.hidden;
+ const typing=!document.querySelector('#experiment-request form')?.hidden||!$('experiment-confirm')?.hidden;
+ body.classList.toggle('typing',Boolean(typing));
+}
+function install(){body.classList.add('docked');const prev=window.CockpitUpdate;window.CockpitUpdate=d=>{prev?.(d);if(!d?.connected)return;data=d;try{update(d)}catch(e){console.warn('docked layout',e)}};setTimeout(()=>dispatchEvent(new Event('resize')),100)}
 if(document.readyState==='complete')install();else window.addEventListener('load',install);
 })();
