@@ -1,4 +1,8 @@
 {
  "repo": "jungmin5589-del/hongik-carla-hmi",
- "commit": "b7eeee07a87640c51be3322c491a10981a3621fc"
+ "commit": "ed3016e64ce13d383f1fe804681b687eec10ccde",
+ "branches": [
+  "codex/experiment-protocol-20261120",
+  "codex/portable-motion-20261111"
+ ]
 }

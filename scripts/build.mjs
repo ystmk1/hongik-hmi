@@ -33,6 +33,8 @@ export const SERVED = {
   '/midterm-panel.css': 'midterm_panel.css',
   '/midterm-audio.js': 'midterm_audio.js',
   '/pedestrian-ui.js': 'pedestrian_ui.js',
+  '/experiment-ui.js': 'experiment_ui.js',
+  '/survey-ui.js': 'survey_ui.js',
   '/cockpit.js': 'course_ui/cockpit.js',
   '/cockpit.css': 'course_ui/cockpit.css',
   '/research-events.css': 'course_ui/research-events.css',
@@ -52,7 +54,7 @@ async function navigationHtml() {
   return html;
 }
 
-// native_carla.native_navigation_html(midterm)
+// native_carla.native_navigation_html(midterm), synced with the experiment-protocol branch (2026-11-22)
 async function nativeNavigationHtml(midterm) {
   let html = await navigationHtml();
   html = html.replaceAll('Math.min(devicePixelRatio,2)', 'Math.min(devicePixelRatio,1)');
@@ -61,7 +63,7 @@ async function nativeNavigationHtml(midterm) {
   if (midterm) {
     html = html.replaceAll('src="/research-events.js', 'src="/midterm-panel.js');
     html = html.replace('</head>', '<script defer src="/exterior-sound.js"></script><script defer src="/underbody-sound.js"></script><script defer src="/scene-audio.js"></script><script defer src="/midterm-audio.js"></script><link rel="stylesheet" href="/midterm-panel.css"></head>');
-    html = html.replace('</head>', '<script defer src="/feedback-voice.js"></script></head>');
+    html = html.replace('</head>', '<script defer src="/feedback-voice.js"></script><script defer src="/experiment-ui.js"></script><script defer src="/survey-ui.js"></script></head>');
   } else {
     html = html.replace('</head>', '<script defer src="/exterior-sound.js"></script><script defer src="/underbody-sound.js"></script><script defer src="/scene-audio.js"></script><script defer src="/city-study.js"></script><link rel="stylesheet" href="/city-study.css"></head>');
   }
@@ -70,7 +72,8 @@ async function nativeNavigationHtml(midterm) {
 
 // Generated files: served path -> () => text
 export const GENERATED = {
-  '/index.html': async () => withMock((await read('native_home.html')).replace('<main>', '<script src="/language.js"></script><script defer src="/participant-setup.js"></script><main>')),
+  '/index.html': async () => withMock((await read('native_home.html')).replace('<main>', '<script src="/language.js"></script><script defer src="/participant-setup.js"></script><main><p><a href="/experiment">AI OFF / ON experiment</a></p>')),
+  '/experiment.html': async () => withMock(await read('experiment.html')),
   '/navigation.html': async () => withMock(await nativeNavigationHtml(true)),
   '/navigation/classic.html': async () => withMock(await nativeNavigationHtml(false)),
   '/admin.html': async () => withMock(await read('research_admin.html')),

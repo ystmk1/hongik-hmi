@@ -17,7 +17,7 @@ const realFetch=window.fetch.bind(window);
 // Keep WebGL pixels readable so page-capture tools (HTML to Figma) get the 3D road, not a blank canvas.
 {const getContext=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,attrs){if(/webgl/.test(type))attrs={...attrs,preserveDrawingBuffer:true};return getContext.call(this,type,attrs)}}
 const DATA='/demo/data/';
-let study=null;const studyReady=realFetch(DATA+'study.json').then(r=>r.json()).then(d=>{study=d});
+let study=null,voice=null;const studyReady=Promise.all([realFetch(DATA+'study.json').then(r=>r.json()).then(d=>{study=d}),realFetch(DATA+'research-voice.json').then(r=>r.json()).then(d=>{voice=d}).catch(()=>{})]);
 
 // ---------- persistence ----------
 const LOCAL='hmi-demo-records-v1',SESSION='hmi-demo-drive-v1';
@@ -41,8 +41,8 @@ function range(a,b,step){const out=[];for(let v=a;v<=b;v+=step)out.push(v);retur
 // ---------- scenario profiles ----------
 const PROFILES={congestion:'4차로 정체',night:'야간 졸음운전 차량',fog:'짙은 안개',yield:'보행자와 서로 양보',carpool:'카풀 대기 중 외부인 접근',rattle:'주행 중 반복되는 이상음',cargo:'도로 위 낙하물'};
 const TUNING={
- congestion:{cruise:32,lead:28,gap:5.5,wide:28,onset:10,horn:2.2,layout:'four_lane_blockade'},
- night:{cruise:62,lead:58,gap:6.5,wide:28,onset:10,horn:.4,layout:'two_lane_boundary_weaving'},
+ congestion:{cruise:32,lead:28,gap:5.5,wide:28,onset:30,horn:2.2,layout:'four_lane_blockade'},
+ night:{cruise:62,lead:58,gap:6.5,wide:28,onset:30,horn:.4,layout:'two_lane_boundary_weaving'},
  fog:{cruise:55,lead:50,gap:8,wide:36,onset:10,horn:.4},
  yield:{cruise:24,lead:null,gap:9,wide:28,onset:8,horn:.4},
  carpool:{cruise:0,lead:null,gap:9,wide:28,onset:6,horn:.4},
@@ -58,14 +58,15 @@ let speedFactor=Number(sessionStorage.getItem('hmi-demo-speed'))||1;
 function blankSim(){return {phase:'choose',mode:'paused',quality:'high',profile:null,condition:'B',presentation:'midterm',language:'ko',error:null,frames:0,frame:0,preparingAt:0}}
 if(!sim)sim=blankSim();
 function saveSim(){try{sessionStorage.setItem(SESSION,JSON.stringify(sim))}catch{}}
-function prepare(profile,condition='B',presentation='midterm',language='ko'){
+function prepare(profile,condition='B',presentation='midterm',language='ko',spec=null){
  const t=TUNING[profile];
  Object.assign(sim,{phase:'preparing',frozen:false,mode:'paused',profile,condition,presentation,language,error:null,preparingAt:Date.now(),frames:0,
   session:uid(),elapsed:0,onset:false,onsetAt:null,completed:false,completion_reason:null,dialog_open:false,horn_count:0,
   speed:0,lead_speed:0,ego_s:120,offset:0,target_offset:0,lead_s:120+t.gap+4.6,lead_lateral:0,gap:t.gap,desired_gap:t.gap,
   feedback:'',last_action:null,action_complete:false,highbeam_at:null,cargo_hits:0,
   traffic:makeTraffic(profile),ped:profile==='yield'?{forward:16,right:5.5,crossed:false}:profile==='carpool'?{forward:-6,right:5,approach:0}:null,
-  options_open:false,choice:null,requests:{},replies:{},
+  options_open:false,choice:null,requests:{},replies:{},emergency:false,survey:null,
+  exp:spec?{...spec,watch:false,notified:false,notice:'',notice_id:0,feedback:'',last_request:null,temperature:21,request_serial:0,watch_at:null,notify_at:null}:null,
   study:{phase:'idle',action:null,pending_at:null,started_at:null,observed:0,stopped:0,status:null,summary:'',feedback:'',view_seen:false,repeat_count:0,service_end:false,fixed:false}});
  attachTrial();saveSim();
 }
@@ -75,6 +76,12 @@ function makeTraffic(profile){
  if(profile==='night')return [{id:9301,lane:-WIDTH,s:60,speed:72,len:4.6,wid:1.9}];
  if(profile==='fog'||profile==='rattle')return [{id:9401,lane:WIDTH,s:170,speed:48,len:4.6,wid:1.9}];
  return [];
+}
+function experimentSpec(index,order=0){
+ const trials=study?.experiment?.trials||[];index=Number(index);
+ if(!Number.isInteger(index)||index<0||index>=trials.length)throw Error('Invalid trial index');
+ const [key,profile,ai]=trials[index];
+ return {index,trial_key:key,profile,ai_enabled:ai,practice:key==='practice',option_order:(Number(order)||0)%2};
 }
 const T=()=>TUNING[sim.profile];
 const hasLead=()=>T().lead!=null;
@@ -94,18 +101,35 @@ function log(event,extra={}){
 }
 function attachTrial(){
  sim.trialId=null;const p=records.current;if(!p)return;
- records.trials.push({id:sim.session,participant_id:p.id,profile:sim.profile,condition:sim.condition,language:sim.language,created_utc:utc(),started_utc:null,finished_utc:null,onset_s:null,selected_s:null,executed_s:null,last_action:null,result:null,completed:0});
+ records.trials.push({id:sim.session,participant_id:p.id,profile:sim.profile,condition:sim.exp?(sim.exp.ai_enabled?'AI_ON':'AI_OFF'):sim.condition,language:sim.language,created_utc:utc(),started_utc:null,finished_utc:null,onset_s:null,selected_s:null,executed_s:null,last_action:null,result:null,completed:0});
  sim.trialId=sim.session;saveRecords();
 }
 
 // ---------- study requests (port of midterm_study.StudyRequests, simplified physics) ----------
-function schedule(action,fixed=false){
+function intentLine(action){const key=voice?.ko?.intent_actions?.[action];return voice?.ko?.voices?.[key]?.text||'요청을 준비했어요.'}
+const REQUEST_DELAY=3.5; // lab: length of the cached acknowledgement voice (3 to 15 s)
+// experiment_protocol.Protocol.request: explain, notify and maintain are answered without a vehicle action
+function protocolRequest(action){
+ const p=sim.exp;if(!p)return null;
+ if(action==='explain'){const c=study?.copy?.[sim.profile]||['','',''];p.feedback=c[1]+' '+c[2];p.last_request='explain';p.request_serial++;log('experiment_explanation_only');return p.feedback}
+ if(action==='maintain'){p.watch=p.notified=false;p.last_request='maintain';p.feedback='현재 주행을 유지해요.';p.request_serial++;log('experiment_maintain');return p.feedback}
+ if(action==='notify'){p.watch=true;p.notified=false;p.watch_at=sim.elapsed;p.last_request='notify';p.feedback='상황 변화를 확인하고 알려드릴게요.';p.request_serial++;log('experiment_watch_started');return p.feedback}
+ return null;
+}
+function schedule(action,fixed=false,direct=false){
  const st=sim.study;
  if(!['idle','complete'].includes(st.phase))throw Error('요청을 진행 중이에요.');
  if(sim.completed)throw Error('주행이 끝났어요. 출발 설정에서 다시 준비해 주세요.');
- if(!fixed&&sim.presentation==='midterm'&&(sim.condition!=='B'||!sim.onset||!sim.dialog_open))throw Error('현재 상황을 먼저 확인해 주세요.');
- Object.assign(st,{action,phase:'queued',pending_at:sim.elapsed,feedback:'요청을 준비했어요. 3초 안에 취소할 수 있어요.',summary:'',status:null,view_seen:false,stopped:0,observed:0,fixed});
- log('request_queued',{action,countdown_s:3,condition:sim.condition,fixed_button:fixed});
+ if(!fixed&&sim.presentation==='midterm'&&(sim.condition!=='B'||!sim.onset||(!direct&&!sim.dialog_open)))throw Error('현재 상황을 먼저 확인해 주세요.');
+ if(sim.exp&&!fixed){
+  if(!sim.exp.ai_enabled)throw Error('이번 회차는 AI 안내가 꺼져 있어요.');
+  if(sim.exp.practice)throw Error('연습에서는 온도 조절만 요청해 주세요.');
+  const handled=protocolRequest(action);if(handled!=null){st.feedback=handled;return handled}
+ }
+ if(sim.exp){sim.exp.watch=sim.exp.notified=false}
+ Object.assign(st,{action,phase:'queued',pending_at:sim.elapsed,delay:REQUEST_DELAY,feedback:intentLine(action)+' 실행 전까지 취소할 수 있어요.',summary:'',status:null,view_seen:false,stopped:0,observed:0,fixed});
+ log('request_queued',{action,countdown_s:REQUEST_DELAY,condition:sim.condition,fixed_button:fixed});
+ return st.feedback;
 }
 function cancelStudy(){
  const st=sim.study;
@@ -151,29 +175,37 @@ function tickStudy(dt,driving){
  const st=sim.study;
  if(['idle','complete'].includes(st.phase))return;
  if(!driving&&st.phase!=='stopping')return;
- if(st.phase==='queued'){if(sim.elapsed-st.pending_at>=3)execute();return}
+ if(st.phase==='queued'){if(sim.elapsed-st.pending_at>=(st.delay||3))execute();return}
  const age=sim.elapsed-(st.started_at??sim.elapsed);
  if(st.phase==='applying'){
   const ok=ready(age);
   if(ok||age>=50){st.status=ok?(st.action==='support'?'partial':'achieved'):'unfulfilled';st.summary=describe();st.feedback=st.summary;sim.action_complete=ok;st.phase='observing';st.observed=0;
    log('request_result_observation',{action:st.action,status:st.status,summary:st.summary})}
- }else if(st.phase==='observing'){st.observed+=dt;if(st.observed>=12)st.phase='stopping'}
+ }else if(st.phase==='observing'){st.observed+=dt;if(st.observed>=20)st.phase='stopping'}
  else if(st.phase==='stopping'){st.stopped=sim.speed<.5?st.stopped+dt:0;
   if(st.stopped>=1){st.phase='complete';sim.completed=true;sim.completion_reason='action_outcome';st.service_end=st.action==='end_ride'&&st.status==='achieved';
    log('request_completed',{action:st.action,status:st.status,service_end:st.service_end})}}
 }
-function studyOutcome(){const st=sim.study;return {action:st.action,phase:st.phase==='queued'?'applying':st.phase,status:st.status,summary:st.summary,observed_s:+st.observed.toFixed(2),observe_s:12,elapsed_s:+Math.max(0,sim.elapsed-(st.started_at??sim.elapsed)).toFixed(2),message:st.phase==='complete'?'주변 상황을 확인했어요.':st.feedback}}
-function studyPublic(){const st=sim.study;return {phase:st.phase,action:st.action,countdown_s:st.phase==='queued'?+Math.max(0,3-(sim.elapsed-st.pending_at)).toFixed(2):null,condition:sim.condition,
+function studyOutcome(){const st=sim.study;return {action:st.action,phase:st.phase==='queued'?'applying':st.phase,status:st.status,summary:st.summary,observed_s:+st.observed.toFixed(2),observe_s:20,elapsed_s:+Math.max(0,sim.elapsed-(st.started_at??sim.elapsed)).toFixed(2),message:st.phase==='complete'?'주변 상황을 확인했어요.':st.feedback}}
+function studyPublic(){const st=sim.study;return {phase:st.phase,action:st.action,countdown_s:st.phase==='queued'?+Math.max(0,(st.delay||3)-(sim.elapsed-st.pending_at)).toFixed(2):null,condition:sim.condition,
  cancellable:['queued','applying','observing'].includes(st.phase),repeatable:st.phase==='observing'&&['horn','widen','lateral','inspect'].includes(st.action),repeat_count:st.repeat_count,view_seen:st.view_seen,service_end:st.service_end,
  safe_bay:null,offset_m:sim.offset,request_elapsed_s:+Math.max(0,sim.elapsed-(st.started_at??sim.elapsed)).toFixed(2),source:'demo mock backend; scripted, not CARLA'}}
 
+function tickProtocol(dt,driving){
+ const p=sim.exp,st=sim.study;if(!p||!driving)return;
+ if(p.practice){if(sim.elapsed>=120&&st.phase==='idle'){Object.assign(st,{action:'practice_end',phase:'stopping',status:'achieved',summary:'연습을 마치고 차량을 정차하고 있어요.',feedback:'연습을 마치고 차량을 정차하고 있어요.'})}return}
+ // lab: waits for a real gap or risk change; the demo raises the notice 8 s after the request
+ if(p.watch&&!p.notified&&sim.elapsed-p.watch_at>=8){p.notified=true;p.notify_at=sim.elapsed;p.notice_id++;
+  p.notice=sim.profile==='congestion'?'왼쪽 차로에 진입할 여유가 확인됐어요. 이동하려면 대응을 선택해 주세요.':'앞차의 움직임과 차간 거리에 주의가 필요해요. 대응을 선택할 수 있어요.';p.feedback=p.notice;log('experiment_watch_notified',{summary:p.notice})}
+ if(p.watch&&p.notified&&sim.elapsed-p.notify_at>=20){p.watch=false;Object.assign(st,{action:'notify',status:'achieved',summary:p.notice,feedback:p.notice,phase:'stopping',observed:20})}
+}
 // ---------- kinematics ----------
 function step(dt){
  if(!live())return;
  const driving=sim.mode==='auto',t=T(),st=sim.study;
  if(driving&&!sim.completed){
   sim.elapsed+=dt;
-  if(!sim.onset&&sim.elapsed>=t.onset){sim.onset=true;sim.onsetAt=sim.elapsed;log('scenario_onset',{renderer:'demo',profile:sim.profile})}
+  if(!sim.onset&&!sim.exp?.practice&&sim.elapsed>=t.onset){sim.onset=true;sim.onsetAt=sim.elapsed;log('scenario_onset',{renderer:'demo',profile:sim.profile})}
  }
  // target speed
  let target=driving&&!sim.completed?t.cruise:0;
@@ -182,7 +214,7 @@ function step(dt){
  if(sim.profile==='yield'&&sim.ped?.crossed)target=Math.min(t.cruise,14);
  if(sim.profile==='cargo'&&sim.onset&&!['avoid','delegate'].includes(st.action))target=Math.min(target,Math.max(0,(130+t.onset*16-sim.ego_s)));
  if(sim.profile==='carpool')target=st.action==='relocate'&&st.phase==='applying'?8:0;
- if(['stopping','complete'].includes(st.phase)||st.status==='unfulfilled')target=0;
+ if(['stopping','complete'].includes(st.phase)||st.status==='unfulfilled'||sim.emergency)target=0;
  if(['safe_stop','end_ride','stop'].includes(st.action)&&st.phase==='applying')target=Math.abs(sim.offset-sim.target_offset)<.4?0:Math.min(target,18);
  if(st.action==='slow'&&['applying','observing'].includes(st.phase))target=Math.min(target,Math.max(10,t.cruise*.4));
  if(st.action==='pass'&&st.phase==='applying'&&Math.abs(sim.offset+WIDTH)<.8)target=t.cruise+18;
@@ -202,7 +234,9 @@ function step(dt){
    else if(!sim.ped.crossing)sim.ped.right=5.5+.35*Math.sin(sim.elapsed*1.7)}
   if(sim.profile==='carpool'){if(sim.onset&&!sim.ped.leaving)sim.ped.approach=Math.min(1,sim.ped.approach+dt/4);if(sim.ped.leaving)sim.ped.approach=Math.max(-1,sim.ped.approach-dt/3)}
  }
+ tickProtocol(dt,driving);
  tickStudy(dt,driving);
+ if(sim.emergency&&sim.speed<.14&&!sim.completed){sim.emergency=false;sim.completed=true;sim.completion_reason='emergency_stop';sim.mode='paused';log('trial_completed',{reason:'emergency_stop'})}
  if(!sim.completed&&sim.elapsed>=300&&sim.speed<.5){sim.completed=true;sim.completion_reason='duration_end';log('trial_completed',{reason:'duration_end'})}
  sim.frame++;
 }
@@ -219,7 +253,7 @@ function scenarioPublic(){
   collision_count:0,action:sim.last_action,action_complete:sim.action_complete,feedback:st.phase!=='idle'?st.feedback:sim.feedback,completed:sim.completed,completion_reason:sim.completion_reason,
   outcome:studyOutcome(),dialog_open:sim.dialog_open,high_beam:{on:(since>=0&&since<.6)||(since>=1.1&&since<1.7)},
   state_source:'demo mock backend; scripted, not CARLA'};
- if(st.phase==='idle')r.outcome={action:null,phase:'idle',status:null,summary:'',observed_s:0,observe_s:12,elapsed_s:0,message:''};
+ if(st.phase==='idle')r.outcome={action:null,phase:'idle',status:null,summary:'',observed_s:0,observe_s:20,elapsed_s:0,message:''};
  if(t.layout)r.layout=t.layout;
  if(sim.profile==='fog'){const d=fogDensity(sim.elapsed);r.fog={density:d,stage:d===0?'clear':d>95?'dense':'thick'}}
  if(sim.profile==='cargo')r.cargo={impact_count:0};
@@ -228,11 +262,12 @@ function scenarioPublic(){
 }
 function bridgeState(){
  const s={kind:'hongik-native-carla',phase:sim.phase,renderer_backend:'demo',error:sim.error,lab_rig:false,mode:sim.mode,quality:sim.quality,width:1280,height:720,
-  speed_kph:live()?+sim.speed.toFixed(2):0,frames:sim.frames,frame:sim.frame,target_fps:30,measured_fps:live()?30:0,presentation:sim.presentation,condition:sim.condition,demo:true};
+  speed_kph:live()?+sim.speed.toFixed(2):0,frames:sim.frames,frame:sim.frame,target_fps:30,measured_fps:live()?30:0,presentation:sim.presentation,condition:sim.condition,departure_ready:true,drive_guard:null,demo:true};
  if(sim.profile){s.profile=sim.profile;s.route_length_m=LENGTH;s.lane_count=4}
  return {...s,scenario:live()?scenarioPublic():null};
 }
 function options(){
+ if(sim.exp){if(!sim.exp.ai_enabled||sim.exp.practice)return [];return [...(study?.experiment?.options?.[sim.profile]?.[sim.exp.option_order]||[]),{action:'study_maintain',scenario_action:'request_maintain',label:'그냥 둘게요',detail:'현재 주행을 유지해요.'}]}
  if(sim.presentation==='midterm'){if(sim.condition==='A')return [];return [...(study?.options?.[sim.profile]||[]),{action:'study_maintain',scenario_action:'request_maintain',label:'그냥 둘게요',detail:'현재 차량의 대응을 유지해요.'}]}
  return study?.classic?.[sim.profile]||study?.classic?.night||[];
 }
@@ -263,7 +298,7 @@ function navState(){
   route:{destination:{id:'trial_end',name:'목적지',point:pts.at(-1),distance_m:LENGTH,detail:'경로 안내'},points:pts,index:Math.floor(sim.ego_s/6),remaining_m:Math.round(Math.max(0,300-sim.elapsed)*30/3.6),arrived:sim.completed&&sim.completion_reason==='duration_end',off_route:false},
   session:{session_id:sim.session,stage:sim.elapsed>0||sim.mode==='auto'?'running':'ready',scenario:{congestion:1,night:2,fog:3}[sim.profile]||4,
    navigation:{id:sim.session+'-weaving',status:'monitoring',map_label:PROFILES[sim.profile],title,body:narration.text,research_event:event}},
-  nurec:{...bridgeState(),scenario:sc},renderer:'demo'};
+  nurec:{...bridgeState(),scenario:{...sc,emergency_pending:!!sim.emergency}},renderer:'demo'};
  if(!midterm)return data;
  // midterm_study.enrich_navigation
  let [mt,situation,behavior]=COPY;
@@ -276,7 +311,70 @@ function navState(){
  if(!['idle','queued'].includes(st.phase)){event.description=st.feedback;event.outcome=studyOutcome()}
  Object.assign(data.session.navigation,{title:mt,body:event.description});
  data.passive={title:mt,body:behavior,detail,door_locked:sim.profile==='carpool',physical_state_source:false,level:sim.onset?level:0};
+ // experiment_protocol.Protocol.enrich
+ const p=sim.exp;
+ if(p){
+  data.experiment={index:p.index,trial_key:p.trial_key,profile:p.profile,ai_enabled:p.ai_enabled,practice:p.practice,option_order:p.option_order,
+   watching:p.watch,notified:p.notified,notice:p.notice,notice_id:p.notice_id,feedback:p.feedback,last_request:p.last_request,temperature:p.temperature,request_serial:p.request_serial};
+  if(!p.ai_enabled||p.practice){Object.assign(event,{active:false,options:[],description:'',situation:'',vehicle_action:'',title:'경로를 따라 주행',narration:{},live_detail:'',feedback:''});Object.assign(data.session.navigation,{title:'경로를 따라 주행',body:''});data.passive={}}
+  else{event.experiment=data.experiment;if(p.notified)event.feedback=p.notice;else if(p.feedback&&st.phase==='idle')event.feedback=p.feedback}
+ }
  return data;
+}
+// experiment_protocol.intent: free text to one of the implemented requests
+function intent(text,profile){
+ const t=String(text).replace(/\s+/g,'').toLowerCase(),has=list=>list.some(w=>t.includes(w));
+ if(has(['출구','다른길','돌아가','경로','exit','reroute']))return null;
+ if(has(['하지마','하지말','지말','지마','말고','취소','좁혀','가까이','donot',"don't",'不要','closer','缩短']))return null;
+ if(has(['왜','무슨상황','어떤상황','설명','why','explain','为什么','说明']))return 'explain';
+ if(has(['알려','알림','notify','letmeknow','tellme','通知','提醒']))return 'notify';
+ if(has(['거리','간격','떨어','distance','gap','车距','距离'])&&has(['넓','더','벌','확보','떨어','increase','more','拉大','扩大']))return 'widen';
+ if(has(['경적','클락','클랙','빵','horn','鸣笛','喇叭']))return 'horn';
+ const passing=has(['추월','앞질','overtake','超车'])||(t.includes('pass')&&!t.includes('passenger'));
+ const lane=has(['1차로','일차로','왼쪽','leftlane','左侧车道'])&&has(['가줘','가줘요','진입','이동','가자','가도','go','move','change','驶入']);
+ if(passing||lane)return profile==='congestion'?'merge':'pass';
+ if(has(['그냥','유지','기다릴','maintain','keepgoing','保持','等待']))return 'maintain';
+ return null;
+}
+const INTENT_MESSAGE={explain:'지금 상황과 차량의 대응을 설명할게요.',notify:'상황 변화를 확인해 알려드릴게요.',widen:'앞차와 간격을 넓힐게요.',merge:'안전한 틈이 생기면 왼쪽 차로로 이동할게요.',pass:'안전한 공간에서 앞차를 지나갈게요.',horn:'앞차에 경적을 한 번 울릴게요.',maintain:'현재 주행을 유지할게요.'};
+// experiment_api.request
+function experimentRequest(body){
+ const p=sim.exp;
+ if(!p||!p.ai_enabled)throw Error('AI 요청을 사용할 수 없는 회차예요.');
+ if(body.session_id!==sim.session)throw Error('이전 주행의 요청이에요. 다시 확인해 주세요.');
+ if(sim.completed)throw Error('주행을 다시 준비해 주세요.');
+ const text=String(body.text||'').trim(),source=body.source||'text';
+ if(!text||text.length>1000||!['text','voice'].includes(source))throw Error('요청 내용을 확인해 주세요.');
+ if(p.practice){
+  const m=text.match(/(?<!\d)(1[6-9]|2\d|30)(?!\d)/),temperature=m&&['온도','도','temperature','degrees','温度'].some(x=>text.toLowerCase().includes(x));
+  if(!temperature)return {supported:false,message:'연습에서는 온도를 16~30도로 조절해 보세요. 예: 온도를 22도로 해 줘.'};
+  const degrees=Number(m[1]);
+  if(body.execute){p.temperature=degrees;p.feedback=`실내 온도를 ${degrees}도로 설정했어요.`;log('experiment_practice_request',{client_event:{input_source:source,transcript:text}})}
+  return {supported:true,action:'temperature',message:body.execute?p.feedback:`실내 온도를 ${degrees}도로 설정할까요?`};
+ }
+ const action=intent(text,sim.profile);
+ if(!body.execute){log('experiment_free_request',{client_event:{transcript:text,input_source:source,choice:action?'study_'+action:'unsupported'}});if(action)log('navigation_study_choice',{client_event:{input_source:source,transcript:text,choice:'study_'+action}})}
+ if(!action)return {supported:false,message:'현재 구현된 대응으로 확실하게 해석하지 못했어요. 요청을 구체적으로 말하거나 문구를 선택해 주세요.'};
+ if(!body.execute)return {supported:true,action,message:INTENT_MESSAGE[action]};
+ if(!sim.onset)throw Error('현재는 정상 주행 중이에요. 상황 발생 후 요청해 주세요.');
+ const feedback=schedule(action,false,true);
+ log('navigation_execution_confirmed',{action,client_event:{input_source:source,transcript:text}});
+ return {supported:true,action,message:feedback||'요청을 접수했어요.'};
+}
+// survey_store.current
+function surveyPack(body){
+ if(!live()||!sim.completed)throw Error('주행이 끝나면 설문을 작성할 수 있어요.');
+ if(body&&body.session_id!==sim.session)throw Error('주행이 변경됐어요. 현재 회차를 확인해 주세요.');
+ const ai=sim.exp?sim.exp.ai_enabled:sim.condition!=='A',practice=!!sim.exp?.practice,schema=study?.survey?.[ai?'on':'off']||{questions:[]};
+ records.surveys=records.surveys||{};let record=records.surveys[sim.session]||null;
+ if(body){
+  if(practice)throw Error('연습에는 설문이 없어요.');
+  const answers=body.answers||{},ids=new Set(schema.questions.map(q=>q.id));
+  if(Object.keys(answers).some(k=>!ids.has(k)))throw Error('현재 회차의 설문 항목만 제출해 주세요.');
+  if(body.submit===true&&schema.questions.some(q=>q.required&&(answers[q.id]==null||answers[q.id]==='')))throw Error('표시된 필수 척도 문항에 답해 주세요.');
+  if(!record?.submitted_utc){record={answers,saved_utc:utc(),submitted_utc:body.submit===true?utc():null};records.surveys[sim.session]=record;saveRecords()}
+ }
+ return {session_id:sim.session,required:!practice,recording:!!sim.trialId,schema,record,profile:sim.profile,condition:ai?'AI_ON':'AI_OFF'};
 }
 
 // ---------- commands (port of NavigationAdapter.command) ----------
@@ -294,7 +392,8 @@ function command(body){
   schedule(chosen.scenario_action?chosen.scenario_action.slice(8):CLASSIC_MAP[action]||'maintain');
   if(sim.presentation!=='midterm'){execute();st.phase='applying'}
   message=st.feedback;sim.options_open=false;sim.choice=null;
- }else if(['study_fixed_help','study_fixed_stop','study_cancel_pending','study_view_opened','study_repeat'].includes(action)){
+ }else if(['study_fixed_help','study_fixed_stop','study_cancel_pending','study_view_opened','study_repeat','study_horn_finished'].includes(action)){
+  if(action==='study_horn_finished'){message='경적 재생을 확인했어요.'}else
   if(action==='study_cancel_pending')message=cancelStudy();
   else if(action==='study_view_opened'){st.view_seen=true;log('requested_view_exposed',{action:st.action});message='화면을 표시했어요.'}
   else if(action==='study_fixed_help'){schedule('support',true);message=st.feedback}
@@ -317,8 +416,9 @@ function command(body){
 }
 function control(body){
  if(body.session_id&&body.session_id!==sim.session)throw Error('이전 주행 화면에서 온 요청입니다. 현재 내비를 새로 열어 주세요.');
- if(body.reset){if(!sim.profile)throw Error('시나리오를 먼저 선택해 주세요.');prepare(sim.profile,sim.condition,sim.presentation,sim.language)}
+ if(body.reset){if(!sim.profile)throw Error('시나리오를 먼저 선택해 주세요.');prepare(sim.profile,sim.condition,sim.presentation,sim.language,sim.exp&&experimentSpec(sim.exp.index,sim.exp.option_order))}
  if('mode' in body){if(!['auto','paused'].includes(body.mode))throw Error('Invalid mode');if(!live()||sim.completed)throw Error('시나리오를 먼저 준비해 주세요.');
+  if(body.mode==='auto'&&sim.emergency)throw Error('비상 정지 중에는 다시 출발할 수 없어요.');
   if(body.mode==='auto'&&sim.trialId){const t=records.trials.find(t=>t.id===sim.trialId);if(t&&!t.started_utc){t.started_utc=utc();saveRecords()}}
   sim.mode=body.mode}
  if('quality' in body)sim.quality=body.quality;
@@ -345,12 +445,26 @@ async function route(url,init){
     return {...t,participant_name:p.name,scenario_name:PROFILES[t.profile]||t.profile,first_choice:ev[0]?.label||null,selection_count:ev.length,selected_after_onset_s:t.selected_s!=null&&t.onset_s!=null?t.selected_s-t.onset_s:null}})
     .filter(t=>!q||String(t.participant_name).toLowerCase().includes(q)||t.profile.includes(q)).reverse();
    return json({trials,counts:{participants:records.participants.length,trials:records.trials.length,events:records.events.length},sync:{state:'local-only'},recording_error:'데모: 이 브라우저에만 저장됩니다'})}
+  if(path==='/api/survey')return json(surveyPack());
+  if(path==='/api/stt/status')return json({state:'unavailable',error:'데모에서는 음성 인식을 쓸 수 없어요. 입력으로 요청해 주세요.'});
+  if(path==='/admin/api/survey'){const id=url.searchParams.get('trial'),t=records.trials.find(t=>t.id===id);return json({record:records.surveys?.[id]||null,schema:study?.survey?.[t&&(t.condition==='A'||t.condition==='AI_OFF')?'off':'on']||{questions:[]}})}
   if(path==='/admin/api/events')return json(records.events.filter(e=>e.trial_id===url.searchParams.get('trial')));
  }
  if(method==='POST'){
   try{
-   if(path==='/api/select'){if(!PROFILES[body.profile])throw Error('시나리오를 선택해 주세요.');if(sim.phase==='preparing')throw Error('시나리오를 준비하고 있어요.');
-    prepare(body.profile,body.condition||'B',body.presentation||'midterm',['ko','en','zh'].includes(body.language)?body.language:'ko');return json({accepted:true})}
+   if(path==='/api/select'){const lang=['ko','en','zh'].includes(body.language)?body.language:'ko';if(sim.phase==='preparing')throw Error('시나리오를 준비하고 있어요.');
+    if('experiment_index' in body){const spec=experimentSpec(body.experiment_index,body.option_order);prepare(spec.profile,'B','midterm',lang,spec);sim.openNav=!!body.open_navigation;saveSim();return json({accepted:true})}
+    if(!PROFILES[body.profile])throw Error('시나리오를 선택해 주세요.');
+    prepare(body.profile,body.condition||'B',body.presentation||'midterm',lang);sim.openNav=!!body.open_navigation;saveSim();return json({accepted:true})}
+   if(path==='/api/participant/clear'){if(live()&&sim.elapsed>0&&!sim.completed)throw Error('현재 주행이 끝난 뒤 변경해 주세요.');records.current=null;saveRecords();return json({participant:null})}
+   if(path==='/api/experiment/request'){return json(experimentRequest(body))}
+   if(path==='/api/experiment/end'){if(!sim.exp)throw Error('실험 회차를 먼저 준비해 주세요.');if(body.session_id!==sim.session)throw Error('현재 회차에서 다시 요청해 주세요.');
+    sim.exp.watch=sim.exp.notified=false;Object.assign(sim.study,{action:'moderator_end',phase:'stopping',status:'cancelled',summary:'진행자가 회차를 중단해 차량을 정차하고 있어요.',feedback:'진행자가 회차를 중단해 차량을 정차하고 있어요.'});log('experiment_moderator_end');saveSim();return json({accepted:true})}
+   if(path==='/api/emergency/end'){if(!live()||body.session_id!==sim.session)throw Error('현재 주행에서 다시 요청해 주세요.');
+    if(!sim.completed){sim.emergency=true;if(sim.exp)sim.exp.watch=sim.exp.notified=false;log('emergency_stop_confirmed')}saveSim();return json({accepted:true})}
+   if(path==='/api/survey'){const pack=surveyPack(body);saveSim();return json(pack)}
+   if(path==='/api/stt/start'||path==='/api/stt/transcribe')throw Error('데모에서는 음성 인식을 쓸 수 없어요. 입력으로 요청해 주세요.');
+   if(path==='/admin/api/reset'||path==='/admin/api/github')return json({accepted:true,message:'데모: 연구실 PC에서만 동작해요.'});
    if(path==='/api/participant'){const name=String(body.name||'').trim();if(!name||name.length>80)throw Error('참가자 이름 또는 ID를 1~80자로 입력해 주세요.');
     if(live()&&sim.elapsed>0&&!sim.completed)throw Error('현재 주행이 끝난 뒤 참가자를 변경해 주세요.');
     const p={id:uid(),name,created_utc:utc()};records.participants.push(p);records.current=p;saveRecords();return json({participant:p})}
@@ -377,7 +491,8 @@ window.fetch=async(input,init)=>{
 let last=performance.now();
 setInterval(()=>{
  const now=performance.now(),dt=Math.min(.25,(now-last)/1000)*speedFactor;last=now;
- if(sim.phase==='preparing'&&Date.now()-sim.preparingAt>1200){sim.phase='live';sim.frames=3}
+ if(sim.phase==='preparing'&&Date.now()-sim.preparingAt>1200){sim.phase='live';sim.frames=3;
+  if(sim.openNav){sim.openNav=false;saveSim();if(!/^\/navigation/.test(location.pathname)){location.assign('/navigation');return}}}
  if(sim.frozen)return;
  const n=Math.max(1,Math.round(speedFactor));for(let i=0;i<n;i++)step(dt/n);
  saveSim();
@@ -386,23 +501,26 @@ setInterval(()=>{
 // ?state=<name> opens the navigation frozen in one representative screen state
 // (for design review and page capture). Dialog states still need the UI click:
 // options/confirm open from the 홍익 AI button.
-const STATES={
+const STATES={ // times are seconds after the situation onset
  ready:{},
- driving:{mode:'auto',elapsed:5,speed:62},
- alert:{mode:'auto',elapsed:14,onset:true,speed:62},
- countdown:{mode:'auto',elapsed:16,onset:true,speed:62,study:{phase:'queued',action:'horn',pending_at:16},horn:0},
- result:{mode:'auto',elapsed:24,onset:true,speed:58,study:{phase:'observing',action:'horn',pending_at:16,started_at:19,observed:4,status:'achieved'},horn:1},
- ending:{mode:'auto',elapsed:40,onset:true,speed:0,completed:true,study:{phase:'complete',action:'horn',pending_at:16,started_at:19,observed:12,stopped:1,status:'achieved'},horn:1}};
+ driving:{mode:'auto',at:-6,speed:62},
+ alert:{mode:'auto',at:4,onset:true,speed:62},
+ countdown:{mode:'auto',at:6,onset:true,speed:62,study:{phase:'queued',action:'horn',pending:6},horn:0},
+ result:{mode:'auto',at:16,onset:true,speed:58,study:{phase:'observing',action:'horn',pending:6,started:9.5,observed:6,status:'achieved'},horn:1},
+ ending:{mode:'auto',at:40,onset:true,speed:0,completed:true,study:{phase:'complete',action:'horn',pending:6,started:9.5,observed:20,stopped:1,status:'achieved'},horn:1}};
 const preset=query.get('state');
 if(STATES[preset]&&/^\/navigation/.test(location.pathname)){
  studyReady.then(()=>{
-  const p=STATES[preset],profile=PROFILES[query.get('profile')]?query.get('profile'):'night';
-  prepare(profile,query.get('condition')==='A'?'A':'B','midterm',query.get('lang')||'ko');
-  Object.assign(sim,{phase:'live',frames:3,frozen:true,mode:p.mode||'paused',elapsed:p.elapsed||0,onset:!!p.onset,onsetAt:p.onset?T().onset:null,
-   speed:p.speed||0,lead_speed:hasLead()?T().lead:0,completed:!!p.completed,completion_reason:p.completed?'action_outcome':null,horn_count:p.horn||0,ego_s:120+(p.elapsed||0)*15});
+  const p=STATES[preset],exp=query.has('experiment')?experimentSpec(query.get('experiment'),query.get('order')):null;
+  const profile=exp?exp.profile:PROFILES[query.get('profile')]?query.get('profile'):'night';
+  prepare(profile,query.get('condition')==='A'?'A':'B','midterm',query.get('lang')||'ko',exp);
+  const onset=T().onset,elapsed=p.at==null?0:Math.max(0,onset+p.at);
+  Object.assign(sim,{phase:'live',frames:3,frozen:true,mode:p.mode||'paused',elapsed,onset:!!p.onset,onsetAt:p.onset?onset:null,
+   speed:p.speed||0,lead_speed:hasLead()?T().lead:0,completed:!!p.completed,completion_reason:p.completed?'action_outcome':null,horn_count:p.horn||0,ego_s:120+elapsed*15});
   sim.lead_s=sim.ego_s+sim.desired_gap+4.6;sim.gap=sim.desired_gap;
   if(sim.profile==='night'&&p.onset)sim.lead_lateral=.9;
-  if(p.study){Object.assign(sim.study,p.study);sim.last_action=p.study.action;if(p.study.status){sim.study.summary=RESULT[p.study.action]||'';sim.study.feedback=sim.study.summary}else sim.study.feedback='요청을 준비했어요. 3초 안에 취소할 수 있어요.'}
+  if(p.study){const q=p.study;Object.assign(sim.study,{phase:q.phase,action:q.action,pending_at:onset+q.pending,started_at:q.started==null?null:onset+q.started,observed:q.observed||0,stopped:q.stopped||0,status:q.status||null,delay:REQUEST_DELAY});
+   sim.last_action=q.action;if(q.status){sim.study.summary=RESULT[q.action]||'';sim.study.feedback=sim.study.summary}else sim.study.feedback=intentLine(q.action)+' 실행 전까지 취소할 수 있어요.'}
   saveSim();
  });
 }

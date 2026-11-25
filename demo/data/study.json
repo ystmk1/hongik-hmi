@@ -5,13 +5,13 @@
     "action": "study_horn",
     "scenario_action": "request_horn",
     "label": "클락션",
-    "detail": "앞차에 경적을 길게 한 번 울려요."
+    "detail": "경적을 길게 한 번 울리고 주변 차량의 반응을 확인해요."
    },
    {
     "action": "study_merge",
     "scenario_action": "request_merge",
     "label": "1차로로 진입하기",
-    "detail": "안전한 틈이 확보되면 왼쪽 차로로 이동해요."
+    "detail": "왼쪽에 안전한 틈이 생길 때까지 기다린 뒤 천천히 진입해요."
    },
    {
     "action": "study_end_ride",
@@ -247,5 +247,270 @@
     "detail": "정차 공간이 확인되지 않으면 우선 감속하며 주행합니다."
    }
   ]
+ },
+ "experiment": {
+  "trials": [
+   [
+    "practice",
+    "night",
+    true
+   ],
+   [
+    "s1_off",
+    "congestion",
+    false
+   ],
+   [
+    "s1_on",
+    "congestion",
+    true
+   ],
+   [
+    "s2_off",
+    "night",
+    false
+   ],
+   [
+    "s2_on",
+    "night",
+    true
+   ]
+  ],
+  "options": {
+   "congestion": [
+    [
+     {
+      "action": "study_notify",
+      "scenario_action": "request_notify",
+      "label": "틈 생기면 알려 줘",
+      "detail": "상황 변화를 계속 확인해 알려드려요."
+     },
+     {
+      "action": "study_widen",
+      "scenario_action": "request_widen",
+      "label": "앞차랑 거리 좀 더 둬 줘",
+      "detail": "서서히 감속해 앞차와 간격을 확보해요."
+     },
+     {
+      "action": "study_merge",
+      "scenario_action": "request_merge",
+      "label": "틈 나면 바로 1차로로 가 줘",
+      "detail": "안전한 공간이 확보되면 이동해요."
+     },
+     {
+      "action": "study_horn",
+      "scenario_action": "request_horn",
+      "label": "경적 한 번 울려 줘",
+      "detail": "앞차에 경적을 한 번 울려요."
+     }
+    ],
+    [
+     {
+      "action": "study_merge",
+      "scenario_action": "request_merge",
+      "label": "틈 나면 바로 1차로로 가 줘",
+      "detail": "안전한 공간이 확보되면 이동해요."
+     },
+     {
+      "action": "study_horn",
+      "scenario_action": "request_horn",
+      "label": "경적 한 번 울려 줘",
+      "detail": "앞차에 경적을 한 번 울려요."
+     },
+     {
+      "action": "study_notify",
+      "scenario_action": "request_notify",
+      "label": "틈 생기면 알려 줘",
+      "detail": "상황 변화를 계속 확인해 알려드려요."
+     },
+     {
+      "action": "study_widen",
+      "scenario_action": "request_widen",
+      "label": "앞차랑 거리 좀 더 둬 줘",
+      "detail": "서서히 감속해 앞차와 간격을 확보해요."
+     }
+    ]
+   ],
+   "night": [
+    [
+     {
+      "action": "study_notify",
+      "scenario_action": "request_notify",
+      "label": "위험해지면 바로 알려 줘",
+      "detail": "상황 변화를 계속 확인해 알려드려요."
+     },
+     {
+      "action": "study_widen",
+      "scenario_action": "request_widen",
+      "label": "거리 더 넓혀 줘",
+      "detail": "서서히 감속해 앞차와 간격을 확보해요."
+     },
+     {
+      "action": "study_pass",
+      "scenario_action": "request_pass",
+      "label": "안전할 때 앞질러 가 줘",
+      "detail": "안전한 공간이 확보되면 이동해요."
+     },
+     {
+      "action": "study_horn",
+      "scenario_action": "request_horn",
+      "label": "경적 한 번 울려 줘",
+      "detail": "앞차에 경적을 한 번 울려요."
+     }
+    ],
+    [
+     {
+      "action": "study_pass",
+      "scenario_action": "request_pass",
+      "label": "안전할 때 앞질러 가 줘",
+      "detail": "안전한 공간이 확보되면 이동해요."
+     },
+     {
+      "action": "study_horn",
+      "scenario_action": "request_horn",
+      "label": "경적 한 번 울려 줘",
+      "detail": "앞차에 경적을 한 번 울려요."
+     },
+     {
+      "action": "study_notify",
+      "scenario_action": "request_notify",
+      "label": "위험해지면 바로 알려 줘",
+      "detail": "상황 변화를 계속 확인해 알려드려요."
+     },
+     {
+      "action": "study_widen",
+      "scenario_action": "request_widen",
+      "label": "거리 더 넓혀 줘",
+      "detail": "서서히 감속해 앞차와 간격을 확보해요."
+     }
+    ]
+   ]
+  }
+ },
+ "survey": {
+  "on": {
+   "version": "post-drive-v1",
+   "questions": [
+    {
+     "id": "situation",
+     "label": "어떤 상황이라고 이해했나요?",
+     "kind": "text",
+     "required": false
+    },
+    {
+     "id": "emotion",
+     "label": "주행 중 어떤 감정이 들었나요?",
+     "kind": "text",
+     "required": false
+    },
+    {
+     "id": "wanted_request",
+     "label": "차량에 어떤 대응을 요청하고 싶었나요?",
+     "kind": "text",
+     "required": false
+    },
+    {
+     "id": "anxiety",
+     "label": "얼마나 불안했나요?",
+     "kind": "seven",
+     "required": true
+    },
+    {
+     "id": "frustration",
+     "label": "얼마나 답답했나요?",
+     "kind": "seven",
+     "required": true
+    },
+    {
+     "id": "control",
+     "label": "상황을 조절할 수 있다고 느꼈나요?",
+     "kind": "seven",
+     "required": true
+    },
+    {
+     "id": "understanding",
+     "label": "차량의 행동을 이해할 수 있었나요?",
+     "kind": "seven",
+     "required": true
+    },
+    {
+     "id": "notice",
+     "label": "AI 알림을 알아챘나요?",
+     "kind": "notice",
+     "required": true
+    },
+    {
+     "id": "choice_reason",
+     "label": "그 대응을 선택하거나 선택하지 않은 이유는 무엇인가요?",
+     "kind": "text",
+     "required": false
+    },
+    {
+     "id": "input_reason",
+     "label": "그 입력 방법을 사용한 이유는 무엇인가요?",
+     "kind": "text",
+     "required": false
+    },
+    {
+     "id": "expected_result",
+     "label": "예상한 결과와 실제 결과는 어떻게 달랐나요?",
+     "kind": "text",
+     "required": false
+    },
+    {
+     "id": "fit",
+     "label": "요청과 차량의 대응이 잘 맞았나요?",
+     "kind": "five",
+     "required": true
+    }
+   ]
+  },
+  "off": {
+   "version": "post-drive-v1",
+   "questions": [
+    {
+     "id": "situation",
+     "label": "어떤 상황이라고 이해했나요?",
+     "kind": "text",
+     "required": false
+    },
+    {
+     "id": "emotion",
+     "label": "주행 중 어떤 감정이 들었나요?",
+     "kind": "text",
+     "required": false
+    },
+    {
+     "id": "wanted_request",
+     "label": "차량에 어떤 대응을 요청하고 싶었나요?",
+     "kind": "text",
+     "required": false
+    },
+    {
+     "id": "anxiety",
+     "label": "얼마나 불안했나요?",
+     "kind": "seven",
+     "required": true
+    },
+    {
+     "id": "frustration",
+     "label": "얼마나 답답했나요?",
+     "kind": "seven",
+     "required": true
+    },
+    {
+     "id": "control",
+     "label": "상황을 조절할 수 있다고 느꼈나요?",
+     "kind": "seven",
+     "required": true
+    },
+    {
+     "id": "understanding",
+     "label": "차량의 행동을 이해할 수 있었나요?",
+     "kind": "seven",
+     "required": true
+    }
+   ]
+  }
  }
 }

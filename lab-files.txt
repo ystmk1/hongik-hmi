@@ -30,3 +30,6 @@ scene_audio.js
 city_study.js
 city_study.css
 pedestrian_ui.js
+experiment.html
+experiment_ui.js
+survey_ui.js

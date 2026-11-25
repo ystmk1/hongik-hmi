@@ -22,3 +22,51 @@ body.midterm-study #research-launch.has-update,body.midterm-study #research-laun
 @media(max-width:700px){#research-return-home{left:16px;bottom:76px;padding:12px 18px;font-size:14px}}
 @media(max-height:760px){body.midterm-study #research-dialog{top:70px;bottom:90px}body.midterm-study .research-dialog-content{padding:18px 25px;gap:30px}body.midterm-study #research-title{font-size:24px;margin-bottom:14px}.midterm-info-card{padding:12px 15px;margin-bottom:10px}body.midterm-study .research-option{min-height:67px;padding:12px 15px}#midterm-passive{padding:10px 13px;margin-top:10px}}
 @media(max-width:800px){body.midterm-study #research-dialog{left:14px;right:14px;top:72px;bottom:80px}body.midterm-study .research-dialog-content{grid-template-columns:1fr;gap:20px;padding:20px}#research-ui .midterm-fixed{bottom:76px;min-width:110px;padding:11px 15px;font-size:13px}#research-fixed-help{left:16px}#research-fixed-stop{left:auto;right:16px}body.midterm-study.research-driving #research-launch{bottom:136px!important}#midterm-passive{display:none}}
+
+/* A dedicated bottom edge keeps the existing footer controls unobstructed. */
+body.midterm-study main{height:calc(100dvh - 150px)}
+body.midterm-study>footer{height:102px;padding-bottom:32px}
+body.midterm-study #research-ui .midterm-fixed{bottom:114px}
+body.midterm-study #research-fixed-stop{bottom:114px}
+body.midterm-study #research-launch,body.midterm-study.research-driving #research-launch{
+ --wave-a:#83cde4;--wave-b:#96b4ed;--wave-c:#a1ddd0;--wave-opacity:.38;
+ position:fixed;left:0;right:0;bottom:0!important;top:auto;width:100%;height:44px;min-height:44px;min-width:0;max-width:none;
+ padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;
+ display:block;z-index:49;overflow:visible;cursor:pointer;animation:none!important;touch-action:manipulation;
+}
+body.midterm-study #research-launch::after{content:none}
+#research-launch .hongik-wave{position:absolute;bottom:0;left:0;width:100%;height:32px;overflow:hidden;pointer-events:none;opacity:var(--wave-opacity);transition:opacity 1s ease}
+.hongik-wave path{stroke:none;fill:url(#hongik-wave-gradient);transform-origin:50% 100%;will-change:transform}
+.hongik-wave .wave-back{filter:blur(4px);opacity:.46;animation:hongik-wave-drift 9s ease-in-out infinite alternate}
+.hongik-wave .wave-front{opacity:.7;animation:hongik-wave-drift 7s ease-in-out -3s infinite alternate-reverse}
+body.midterm-study #research-launch.has-update{--wave-a:#4a9aff;--wave-b:#9870f5;--wave-c:#ed9bcf;--wave-opacity:1}
+#research-launch.has-update .hongik-wave{animation:hongik-wave-breathe 3.6s ease-in-out infinite}
+body.midterm-study #research-launch[aria-expanded="true"]{--wave-a:#69bee8;--wave-b:#7799ea;--wave-c:#8acfc6;--wave-opacity:.65}
+#research-launch .wave-label{position:absolute;bottom:49px;left:50%;transform:translateX(-50%) translateY(4px);display:flex;align-items:center;gap:12px;white-space:nowrap;padding:10px 16px;border:1px solid #e2e7ee;border-radius:12px;background:#fffffff5;box-shadow:0 4px 18px #15263c12;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .18s,transform .18s;font:550 13px Pretendard,Arial,sans-serif;color:#64738a}
+#research-launch .wave-label strong{font-size:14px;color:#334b7c}#research-launch .wave-label small{font-size:12px;max-width:min(65vw,500px);overflow:hidden;text-overflow:ellipsis}
+#research-launch:hover .wave-label,#research-launch:focus-visible .wave-label{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0)}
+body.midterm-study #research-launch:focus-visible{outline:2px solid #3e6ae1;outline-offset:-2px}
+#research-launch #research-unread{display:none!important}
+#research-ui[data-fault="true"] #research-launch{--wave-a:#e7ab72;--wave-b:#ce7474;--wave-c:#e5ae91;--wave-opacity:.85}
+#research-launch:disabled .hongik-wave{animation:none;opacity:.2}#research-launch:disabled path{animation-play-state:paused}
+@keyframes hongik-wave-drift{from{transform:translateX(-3%) scaleY(.8)}to{transform:translateX(3%) scaleY(1.12)}}
+@keyframes hongik-wave-breathe{0%,100%{opacity:.72}50%{opacity:1}}
+@media(max-width:800px){body.midterm-study #research-ui .midterm-fixed{bottom:108px}body.midterm-study #research-launch{max-width:none}#research-launch .wave-label{max-width:calc(100vw - 24px)}}
+@media(prefers-reduced-motion:reduce){#research-launch .hongik-wave,#research-launch .hongik-wave path{animation:none!important;transition:none}}
+
+#research-replay{display:block;margin-top:12px;padding:13px 20px;border:1px solid #dce3ee;border-radius:10px;background:white;color:#3e6ae1;font:650 15px Pretendard,Arial,sans-serif;cursor:pointer}
+
+/* Brief situation notice shares the cockpit's white cards and blue accents. */
+#research-notice{position:fixed;z-index:55;left:24px;bottom:178px;width:min(380px,calc(40vw - 48px));padding:18px 44px 14px 21px;border:1px solid #e0e6ef;border-radius:16px;background:#fffffff5;box-shadow:0 8px 30px #20354b1a;animation:notice-arrive .25s ease-out}
+#research-notice[hidden]{display:none!important}#research-notice .notice-accent{position:absolute;left:0;top:19px;bottom:19px;width:3px;border-radius:4px;background:linear-gradient(#72bded,#a185ed)}
+#research-notice>small{font-size:11px;font-weight:700;letter-spacing:.04em;color:#6c7d9a}#research-notice>p{margin:7px 0 10px;color:#26354c;font-size:15px;line-height:1.6;font-weight:650;word-break:keep-all}
+#research-notice-more{padding:4px 0;color:#3e6ae1;background:none;border:0;font:650 13px Pretendard,Arial,sans-serif;cursor:pointer}#research-notice-more span{margin-left:8px}
+#research-notice-close{position:absolute;right:10px;top:10px;width:32px;height:32px;border:0;border-radius:50%;color:#7b8696;background:transparent;font:24px Pretendard,Arial,sans-serif;cursor:pointer}
+#research-notice button:focus-visible{outline:3px solid #89a5ff;outline-offset:3px}
+body.experiment-off #research-notice{display:none!important}
+@keyframes notice-arrive{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:800px){#research-notice{left:16px;bottom:170px;width:min(360px,calc(100vw - 32px))}}
+@media(prefers-reduced-motion:reduce){#research-notice{animation:none}}
+
+/* Situation explanations live in the Hongiki notice and detail panel. */
+#midterm-passive{display:none!important}

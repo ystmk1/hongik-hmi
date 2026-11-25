@@ -28,12 +28,19 @@ from english_locale import catalog as en
 from chinese_locale import catalog as zh
 from midterm_study import OPTIONS,COPY
 from navigation_adapter import OPTIONS as NAV_OPTIONS,BLOCKADE_OPTIONS,FOG_OPTIONS
+extra={}
+try:
+    from experiment_protocol import options as exp_options,TRIALS
+    from survey_store import schema
+    extra=dict(experiment=dict(trials=TRIALS,options={p:[exp_options(p,0),exp_options(p,1)] for p in ('congestion','night')}),survey=dict(on=schema(True),off=schema(False)))
+except Exception:
+    pass
 try:
     from research_voice import catalog as rv
     voices={l:rv(l) for l in ('ko','en','zh')}
 except Exception:
     voices={}
-print(json.dumps(dict(en=en(),zh=zh(),options=OPTIONS,copy=COPY,classic=dict(night=NAV_OPTIONS,congestion=BLOCKADE_OPTIONS,fog=FOG_OPTIONS),research_voice=voices),ensure_ascii=False))
+print(json.dumps(dict(en=en(),zh=zh(),options=OPTIONS,copy=COPY,classic=dict(night=NAV_OPTIONS,congestion=BLOCKADE_OPTIONS,fog=FOG_OPTIONS),research_voice=voices,**extra),ensure_ascii=False))
 '''
     result = subprocess.run([sys.executable, '-c', code, str(lab)], capture_output=True, text=True, cwd=lab)
     if result.returncode:
@@ -44,7 +51,7 @@ print(json.dumps(dict(en=en(),zh=zh(),options=OPTIONS,copy=COPY,classic=dict(nig
     out.mkdir(parents=True, exist_ok=True)
     for lang in ('en', 'zh'):
         (out / f'language-{lang}.json').write_text(json.dumps(data[lang], ensure_ascii=False), encoding='utf-8')
-    (out / 'study.json').write_text(json.dumps(dict(options=data['options'], copy=data['copy'], classic=data['classic']), ensure_ascii=False, indent=1), encoding='utf-8')
+    (out / 'study.json').write_text(json.dumps(dict(options=data['options'], copy=data['copy'], classic=data['classic'], experiment=data.get('experiment'), survey=data.get('survey')), ensure_ascii=False, indent=1), encoding='utf-8')
     (out / 'research-voice.json').write_text(json.dumps(data['research_voice'], ensure_ascii=False), encoding='utf-8')
 
 
@@ -64,7 +71,8 @@ def main():
             shutil.copyfile(source, target)
     export_data(lab)
     commit = subprocess.run(['git', '-C', str(lab), 'rev-parse', 'HEAD'], capture_output=True, text=True).stdout.strip()
-    (HERE / 'demo' / 'data' / 'source.json').write_text(json.dumps(dict(repo='jungmin5589-del/hongik-carla-hmi', commit=commit), indent=1), encoding='utf-8')
+    branches = subprocess.run(['git', '-C', str(lab), 'branch', '-r', '--points-at', 'HEAD'], capture_output=True, text=True).stdout.split()
+    (HERE / 'demo' / 'data' / 'source.json').write_text(json.dumps(dict(repo='jungmin5589-del/hongik-carla-hmi', commit=commit, branches=[b.removeprefix('origin/') for b in branches if b != '->']), indent=1, ensure_ascii=False), encoding='utf-8')
     print(f'Imported {len(lab_files())} paths from {lab} @ {commit[:7]}')
 
 
