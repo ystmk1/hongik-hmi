@@ -381,7 +381,7 @@ body.passenger-mode.docked #research-title{margin:calc(4*var(--u)) 0 calc(20*var
 body.passenger-mode.docked .midterm-explanation>.midterm-info-card{margin:0 0 calc(16*var(--u))!important;padding:0 0 0 calc(32*var(--u))!important;background:none!important;border:0!important}
 body.passenger-mode.docked .midterm-info-card h3{margin:0 0 calc(4*var(--u));color:#6b7480;font-size:calc(18*var(--u));font-weight:500}
 body.passenger-mode.docked .midterm-info-card p{margin:0;font-size:calc(24*var(--u))!important;font-weight:750;color:#1f2a3b}
-body.passenger-mode.docked #research-options-label{display:block!important;margin:calc(28*var(--u)) 0 calc(14*var(--u));color:#6b7480;font-size:calc(20*var(--u))}
+body.passenger-mode.docked #research-options-label{display:block!important;margin:calc(68*var(--u)) 0 calc(14*var(--u));color:#6b7480;font-size:calc(20*var(--u))}
 body.passenger-mode.docked #research-options-label[hidden]{display:none!important}
 body.passenger-mode.docked #options-note,body.passenger-mode.docked .research-option .effect,body.passenger-mode.docked #research-maintain .effect,body.passenger-mode.docked #request-steps,body.passenger-mode.docked #request-preview,body.passenger-mode.docked #research-feedback,body.passenger-mode.docked .research-voice,body.passenger-mode.docked #situation-metrics{display:none!important}
 body.passenger-mode.docked #research-options:not([hidden]){grid-template-columns:repeat(3,1fr);gap:calc(16*var(--u))}
@@ -410,7 +410,7 @@ body.passenger-mode.docked #sc-title{order:1}body.passenger-mode.docked #sc-body
 body.passenger-mode.docked #pane-open{display:none!important}
 body.passenger-mode.docked #research-dialog .midterm-explanation>#research-caption:not(#_a):not(#_b),body.passenger-mode.docked #research-dialog .midterm-explanation>#research-title:not(#_a):not(#_b),body.passenger-mode.docked #research-dialog .midterm-explanation>.midterm-info-card:not(#_a):not(#_b){display:block!important}
 body.passenger-mode.docked.request-active #research-dialog .midterm-explanation>.midterm-info-card:not(#_a):not(#_b),body.passenger-mode.docked.direct-mode #research-dialog .midterm-explanation>.midterm-info-card:not(#_a):not(#_b){display:none!important}
-body.passenger-mode.docked #research-maintain.research-option{min-height:calc(76*var(--u))!important;padding:0 calc(24*var(--u))!important}
+body.passenger-mode.docked #research-maintain.research-option{min-height:calc(76*var(--u))!important;padding:0 calc(24*var(--u))!important;margin-top:calc(14*var(--u))!important}
 body.passenger-mode.docked #research-maintain.research-option strong{color:#4a4f57}
 body.passenger-mode.docked #experiment-stt,body.passenger-mode.docked #experiment-request form label,body.passenger-mode.docked #experiment-result{display:none!important}
 body.passenger-mode.docked #research-ending>small,body.passenger-mode.docked #ending-exit{display:none!important}
