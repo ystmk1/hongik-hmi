@@ -542,7 +542,7 @@ pane.innerHTML='<h2 id="pane-title">차량 주행 옵션 선택하기</h2><div c
 document.querySelector('.map-panel')?.append(pane);
 const foot=document.querySelector('footer');
 const help=document.createElement('button');help.id='footer-help';help.type='button';help.textContent='고객센터 연결';
-const music=document.createElement('button');music.id='footer-music';music.type='button';music.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h11M3 11h11M3 16h7M18 4v12.5a2.5 2.5 0 1 1-2-2.45V4h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span id="footer-track">음악을 선택하세요</span>';
+const music=document.createElement('button');music.id='footer-music';music.type='button';music.setAttribute('aria-label','음악');music.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h11M3 11h11M3 16h7M18 4v12.5a2.5 2.5 0 1 1-2-2.45V4h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span id="footer-track"></span>';
 const stop=document.createElement('button');stop.id='footer-stop';stop.type='button';stop.textContent='길가에 정차';
 foot?.prepend(help);foot?.append(music,stop);
 const open=()=>{const l=$('research-launch');if(l&&$('research-dialog')?.hidden)l.click()};
@@ -607,7 +607,7 @@ function update(d){
  const req=$('experiment-request'),opts=$('research-options');
  if(opts&&req&&!req.hidden&&!opts.querySelector('#direct-card')){const c=document.createElement('button');c.type='button';c.id='direct-card';c.className='research-option';c.dataset.unavailable='false';c.innerHTML='<strong>직접 명령하기</strong><small>말이나 글로 요청해요</small>';c.onclick=()=>body.classList.add('direct-mode');opts.append(c)}
  if(!dialogOpen||opts?.hidden&&!body.classList.contains('typing'))body.classList.remove('direct-mode');
- $('footer-track').textContent=$('track-title')?.textContent||'음악을 선택하세요';
+ {const tt=$('track-title')?.textContent||'';$('footer-track').textContent=tt&&tt!=='음악을 선택하세요'?tt:''}
  const fh=$('research-fixed-help'),fs=$('research-fixed-stop');
  help.disabled=!fh||fh.disabled||fh.hidden;stop.disabled=!fs||fs.disabled||fs.hidden;
  const typing=!document.querySelector('#experiment-request form')?.hidden||!$('experiment-confirm')?.hidden;

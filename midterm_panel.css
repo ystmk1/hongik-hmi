@@ -489,3 +489,4 @@ body.passenger-mode.docked #music-sheet{display:none!important}
 .np-volume{display:flex;align-items:center;gap:calc(10*var(--k));margin-top:calc(14*var(--k));color:#8e8e93}
 .np-volume svg{flex:none;width:calc(18*var(--k))!important;height:calc(18*var(--k))!important}
 
+body.passenger-mode.docked #footer-track:empty{display:none}
