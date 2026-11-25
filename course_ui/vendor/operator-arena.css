@@ -141,3 +141,11 @@ input,select{background:#fff!important}
 .op-admin .panel{background:var(--card)!important;padding:4px 20px 8px!important}
 .op-admin th{border-top:0!important}
 .op-admin dialog{background:var(--card)}
+
+/* keep the Vercel-only demo bar in its own look */
+#hmi-demo-bar,#hmi-demo-bar *{font:12px/1.2 system-ui,sans-serif!important;letter-spacing:0!important}
+#hmi-demo-bar{border-radius:999px!important}
+#hmi-demo-bar b{color:#9fc0ff!important;letter-spacing:.08em!important}
+#hmi-demo-bar span{color:#fff!important;opacity:.7}
+#hmi-demo-bar select,#hmi-demo-bar button{height:auto!important;min-height:0!important;padding:5px 10px!important;border:0!important;border-radius:999px!important;background:rgba(255,255,255,.12)!important;color:#fff!important;font-weight:400!important}
+#hmi-demo-bar button:hover:not(:disabled){background:rgba(255,255,255,.24)!important}
