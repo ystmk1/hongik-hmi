@@ -549,7 +549,35 @@ const open=()=>{const l=$('research-launch');if(l&&$('research-dialog')?.hidden)
 $('sc-open').onclick=open;$('pane-open').onclick=open;
 help.onclick=()=>$('research-fixed-help')?.click();
 stop.onclick=()=>$('research-fixed-stop')?.click();
-music.onclick=()=>$('library-open')?.click();
+// Now Playing widget above the footer music button (Apple home screen widget style)
+const svg=d=>`<svg viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
+const IC={prev:svg('<path d="M6 5v14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M19 5.5v13L9 12z" fill="currentColor"/>'),next:svg('<path d="M18 5v14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M5 5.5v13L15 12z" fill="currentColor"/>'),play:svg('<path d="M7 4.5v15l13-7.5z" fill="currentColor"/>'),pause:svg('<rect x="6" y="4.5" width="4.2" height="15" rx="1.2" fill="currentColor"/><rect x="13.8" y="4.5" width="4.2" height="15" rx="1.2" fill="currentColor"/>'),note:svg('<path d="M9 18V6l10-2v12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6.5" cy="18" r="2.5" fill="currentColor"/><circle cx="16.5" cy="16" r="2.5" fill="currentColor"/>'),low:svg('<path d="M4 9.5h3l4-3.5v12l-4-3.5H4z" fill="currentColor"/>'),high:svg('<path d="M4 9.5h3l4-3.5v12l-4-3.5H4z" fill="currentColor"/><path d="M15 9a4 4 0 0 1 0 6M17.5 6.5a7.5 7.5 0 0 1 0 11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'),close:svg('<path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>')};
+const np=document.createElement('section');np.id='now-playing';np.hidden=true;np.setAttribute('aria-label','음악');
+np.innerHTML=`<div class="np-head"><span class="np-art" id="np-art">${IC.note}</span><div class="np-meta"><strong id="np-title">음악을 선택하세요</strong><span id="np-artist">내 음악</span></div><button type="button" class="np-close" id="np-close" aria-label="음악 닫기">${IC.close}</button></div>
+<div class="np-progress"><input type="range" id="np-seek" min="0" max="100" step="0.1" value="0" aria-label="재생 위치"><div class="np-time"><span id="np-elapsed">0:00</span><span id="np-duration">0:00</span></div></div>
+<div class="np-controls"><button type="button" id="np-prev" aria-label="이전 곡">${IC.prev}</button><button type="button" id="np-play" class="np-play" aria-label="재생">${IC.play}</button><button type="button" id="np-next" aria-label="다음 곡">${IC.next}</button></div>
+<div class="np-volume">${IC.low}<input type="range" id="np-volume" min="0" max="100" value="45" aria-label="음량">${IC.high}</div>
+<div class="np-list"><small>내 음악</small><div id="np-tracks"></div></div>`;
+document.body.append(np);
+const au=document.getElementById('audio');const mmss=t=>Number.isFinite(t)?`${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')}`:'0:00';
+const fill=el=>el.style.setProperty('--fill',el.value+'%');
+function npSync(){const title=$('track-title')?.textContent||'음악을 선택하세요';const picked=title!=='음악을 선택하세요';$('np-title').textContent=title;$('np-artist').textContent=picked?($('track-artist')?.textContent||''):'곡을 골라 재생하세요';const bg=$('current-art')?.style.background;$('np-art').style.background=picked&&bg?bg:'';np.classList.toggle('playing',!!au&&!au.paused);$('np-play').innerHTML=au&&!au.paused?IC.pause:IC.play;$('np-play').setAttribute('aria-label',au&&!au.paused?'일시정지':'재생');
+ if(au){$('np-elapsed').textContent=mmss(au.currentTime);$('np-duration').textContent=mmss(au.duration);$('np-seek').value=au.duration?au.currentTime/au.duration*100:0;fill($('np-seek'))}
+ const rows=[...document.querySelectorAll('#tracks .track-row')];const list=$('np-tracks');list.replaceChildren();
+ for(const r of rows){const b=document.createElement('button');b.type='button';b.className='np-track'+(r.classList.contains('active')?' active':'');b.disabled=r.disabled;const art=r.querySelector('.album-art');b.innerHTML=`<span class="np-dot" style="background:${art?.style.background||'#c9ced6'}"></span><span class="np-t"></span><span class="np-a"></span>`;b.querySelector('.np-t').textContent=r.querySelector('strong')?.textContent||'';b.querySelector('.np-a').textContent=r.querySelector('small')?.textContent||'';b.onclick=()=>r.click();list.append(b)}
+ np.querySelector('.np-list').hidden=!rows.length}
+function placeNp(){const r=music.getBoundingClientRect();np.style.left=Math.max(12,Math.min(r.left,innerWidth-np.offsetWidth-12))+'px'}
+function toggleNp(show=np.hidden){np.hidden=!show;music.classList.toggle('active',show);if(show){npSync();placeNp()}}
+music.onclick=e=>{e.stopPropagation();toggleNp()};
+$('np-close').onclick=()=>toggleNp(false);
+$('np-prev').onclick=()=>$('previous')?.click();$('np-next').onclick=()=>$('next')?.click();$('np-play').onclick=()=>$('play')?.click();
+$('np-seek').oninput=()=>{fill($('np-seek'));if(au&&Number.isFinite(au.duration))au.currentTime=+$('np-seek').value/100*au.duration};
+$('np-volume').oninput=()=>{fill($('np-volume'));const v=$('volume');if(v){v.value=$('np-volume').value;v.dispatchEvent(new Event('input'))}};fill($('np-volume'));
+if(au)for(const ev of ['play','pause','timeupdate','loadedmetadata','emptied'])au.addEventListener(ev,()=>{if(!np.hidden)npSync()});
+const tracksBox=$('tracks');if(tracksBox)new MutationObserver(()=>{if(!np.hidden)npSync()}).observe(tracksBox,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
+document.addEventListener('pointerdown',e=>{if(!np.hidden&&!np.contains(e.target)&&!music.contains(e.target))toggleNp(false)});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!np.hidden)toggleNp(false)});
+addEventListener('resize',()=>{if(!np.hidden)placeNp()});
 $('research-close')?.addEventListener('click',e=>{if(body.classList.contains('direct-mode')){e.stopImmediatePropagation();body.classList.remove('direct-mode')}},true);
 function setSub(el,text){if(el&&el.dataset.raw!==text){el.dataset.raw=text;el.textContent=text;requestAnimationFrame(()=>window.KoType?.refresh?.())}}
 function tick(){now.textContent='현재 시각 '+hhmm(new Date())}tick();setInterval(tick,15000);
