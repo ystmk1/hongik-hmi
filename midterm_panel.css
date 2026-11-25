@@ -486,3 +486,16 @@ body.passenger-mode.docked #music-sheet{display:none!important}
 .np-t{font-size:calc(17*var(--u,1px));font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .np-a{font-size:calc(14*var(--u,1px));color:#8a929c;white-space:nowrap}
 body.passenger-mode.docked #footer-music.active{background:#e3e7ec!important;border-radius:calc(39*var(--u))}
+/* visual polish: glass top band over the drive view, segmented gear selector, softer music widget */
+body.passenger-mode.docked .scene-glass{position:absolute;left:0;right:0;top:0;height:calc(280*var(--u));z-index:1;pointer-events:none;background:linear-gradient(rgba(240,243,247,.7),rgba(246,248,250,.35) 50%,rgba(255,255,255,0));backdrop-filter:blur(calc(10*var(--u))) saturate(140%);-webkit-backdrop-filter:blur(calc(10*var(--u))) saturate(140%);-webkit-mask-image:linear-gradient(#000 20%,transparent);mask-image:linear-gradient(#000 20%,transparent)}
+body.passenger-mode.docked .speed-panel,body.passenger-mode.docked .visual-state{z-index:2}
+body.passenger-mode.docked .gears{display:inline-flex!important;align-items:center;gap:calc(2*var(--u));padding:calc(4*var(--u));margin-bottom:calc(10*var(--u));border-radius:999px;background:rgba(118,124,135,.12);border:1px solid rgba(255,255,255,.6);backdrop-filter:blur(calc(12*var(--u))) saturate(170%);-webkit-backdrop-filter:blur(calc(12*var(--u))) saturate(170%);font-size:calc(22*var(--u))!important;letter-spacing:0!important;word-spacing:0!important;font-weight:600!important;line-height:1}
+body.passenger-mode.docked .gears .gear{display:grid;place-items:center;width:calc(50*var(--u));height:calc(40*var(--u));border-radius:999px;color:#8a929c;transition:background .2s,color .2s}
+body.passenger-mode.docked .gears .gear.on{background:#fff;color:#1f2a3b;font-weight:700;box-shadow:0 calc(2*var(--u)) calc(8*var(--u)) rgba(31,42,59,.14),0 0 0 .5px rgba(31,42,59,.06)}
+#now-playing{--np-tint:linear-gradient(#fff,#fff);background:linear-gradient(rgba(255,255,255,.84),rgba(255,255,255,.9)),var(--np-tint)!important;border-color:rgba(255,255,255,.7)}
+.np-art{background:linear-gradient(135deg,#eceff3,#d3d8e0)!important;color:#8a929c!important;box-shadow:0 calc(4*var(--u,1px)) calc(12*var(--u,1px)) rgba(31,42,59,.1)!important}
+#now-playing.picked .np-art{color:#fff!important}
+#now-playing.picked .np-art[style*="gradient"]{background:var(--np-tint)!important}
+.np-track.active{background:rgba(31,42,59,.06)!important}
+.np-track.active .np-t{color:#1f2a3b!important;font-weight:700}
+#now-playing input[type=range]{background:linear-gradient(to right,#1f2a3b var(--fill),rgba(31,42,59,.12) var(--fill))!important}
