@@ -557,8 +557,7 @@ np.innerHTML=`<div class="np-wash" aria-hidden="true"></div>
 <div class="np-now"><span class="np-art" id="np-art">${IC.note}</span><div class="np-meta"><strong id="np-title">재생 중 아님</strong><span id="np-artist"></span></div></div>
 <div class="np-scrub"><input type="range" id="np-seek" min="0" max="100" step="0.1" value="0" aria-label="재생 위치"><div class="np-time"><span id="np-elapsed">0:00</span><span id="np-duration">-0:00</span></div></div>
 <div class="np-controls"><button type="button" id="np-prev" aria-label="이전 곡">${IC.prev}</button><button type="button" id="np-play" class="np-play" aria-label="재생">${IC.play}</button><button type="button" id="np-next" aria-label="다음 곡">${IC.next}</button></div>
-<div class="np-volume">${IC.low}<input type="range" id="np-volume" min="0" max="100" value="45" aria-label="음량">${IC.high}</div>
-<div class="np-shelf" id="np-tracks" aria-label="내 음악"></div>`;
+<div class="np-volume">${IC.low}<input type="range" id="np-volume" min="0" max="100" value="45" aria-label="음량">${IC.high}</div>`;
 document.body.append(np);
 // Gear selector as an Apple-style segmented control (P R N D, active gear in a raised pill)
 const gearsEl=document.querySelector('.speed-panel .gears');
@@ -571,9 +570,7 @@ function npSync(){const title=$('track-title')?.textContent||'음악을 선택�
  np.style.setProperty('--np-tint',picked&&bg?bg:'linear-gradient(#e9e9ee,#e9e9ee)');np.classList.toggle('picked',picked);np.classList.toggle('playing',playing);
  $('np-play').innerHTML=playing?IC.pause:IC.play;$('np-play').setAttribute('aria-label',playing?'일시정지':'재생');
  if(au){$('np-elapsed').textContent=mmss(au.currentTime);$('np-duration').textContent='-'+mmss(Math.max(0,(au.duration||0)-(au.currentTime||0)));$('np-seek').value=au.duration?au.currentTime/au.duration*100:0;fill($('np-seek'))}
- const rows=[...document.querySelectorAll('#tracks .track-row')];const shelf=$('np-tracks');shelf.replaceChildren();
- for(const r of rows){const b=document.createElement('button');b.type='button';b.className='np-tile'+(r.classList.contains('active')?' active':'');b.disabled=r.disabled;const t=r.querySelector('strong')?.textContent||'';b.setAttribute('aria-label',t+' 재생');b.innerHTML=`<span class="np-cover" style="--c:${r.querySelector('.album-art')?.style.background||'#d1d1d6'}"></span><span class="np-name"></span>`;b.querySelector('.np-name').textContent=t;b.onclick=()=>r.click();shelf.append(b)}
- shelf.hidden=!rows.length}
+}
 function placeNp(){const r=music.getBoundingClientRect();np.style.left=Math.max(12,Math.min(r.left,innerWidth-np.offsetWidth-12))+'px'}
 function toggleNp(show=np.hidden){np.hidden=!show;music.classList.toggle('active',show);if(show){npSync();placeNp()}}
 music.onclick=e=>{e.stopPropagation();toggleNp()};
@@ -581,7 +578,7 @@ $('np-prev').onclick=()=>$('previous')?.click();$('np-next').onclick=()=>$('next
 $('np-seek').oninput=()=>{fill($('np-seek'));if(au&&Number.isFinite(au.duration))au.currentTime=+$('np-seek').value/100*au.duration};
 $('np-volume').oninput=()=>{fill($('np-volume'));const v=$('volume');if(v){v.value=$('np-volume').value;v.dispatchEvent(new Event('input'))}};fill($('np-volume'));
 if(au)for(const ev of ['play','pause','timeupdate','loadedmetadata','emptied'])au.addEventListener(ev,()=>{if(!np.hidden)npSync()});
-const tracksBox=$('tracks');if(tracksBox)new MutationObserver(()=>{if(!np.hidden)npSync()}).observe(tracksBox,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
+
 document.addEventListener('pointerdown',e=>{if(!np.hidden&&!np.contains(e.target)&&!music.contains(e.target))toggleNp(false)});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!np.hidden)toggleNp(false)});
 addEventListener('resize',()=>{if(!np.hidden)placeNp()});
