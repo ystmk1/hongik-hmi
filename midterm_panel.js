@@ -329,3 +329,87 @@ window.CockpitUpdate=data=>{
  notify();prepareOptions();if(fault)$('research-badge').textContent='주행 중단 · 다시 준비해 주세요';
 };
 })();
+
+/* Passenger layer (2026-11-25 design review): passenger vs operator view, one status
+ * bar, trip info instead of driver info, 76px touch targets, 16px minimum text, and
+ * a ready-to-depart step. Operator view: ?operator=1, or hold the DRIVE wordmark 2 s. */
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id),body=document.body;
+const qs=new URLSearchParams(location.search);
+if(qs.has('operator'))sessionStorage.setItem('hongik-operator',qs.get('operator')==='0'?'0':'1');
+function setMode(op){body.classList.toggle('operator-mode',op);body.classList.toggle('passenger-mode',!op);sessionStorage.setItem('hongik-operator',op?'1':'0');fitText();setTimeout(()=>dispatchEvent(new Event('resize')),50)}
+const mark=document.querySelector('.wordmark');
+if(mark){const flag=document.createElement('span');flag.id='operator-flag';flag.textContent='진행자 화면';mark.after(flag);let t=0;
+ mark.addEventListener('pointerdown',()=>{t=setTimeout(()=>setMode(!body.classList.contains('operator-mode')),2000)});
+ for(const e of ['pointerup','pointerleave','pointercancel'])mark.addEventListener(e,()=>clearTimeout(t));}
+// scene sound needs a tap; in the passenger view any first tap arms it
+document.addEventListener('pointerdown',()=>{const b=$('scene-audio-enable');if(b&&!b.hidden&&body.classList.contains('passenger-mode'))b.click()},true);
+
+const icons={
+ waiting:'<circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 7v5l3 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+ normal:'<circle cx="12" cy="12" r="10" fill="currentColor"/><path d="M7.5 12.5l3 3 6-6.5" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>',
+ situation:'<path d="M12 3l10 18H2z" fill="currentColor"/><path d="M12 10v5M12 17.6v.4" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>',
+ request:'<circle cx="12" cy="12" r="10" fill="currentColor"/><path d="M7 12h9M13 8l4 4-4 4" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>',
+ stopped:'<circle cx="12" cy="12" r="10" fill="currentColor"/><rect x="8.5" y="8.5" width="7" height="7" rx="1" fill="#fff"/>'};
+const status=document.createElement('div');status.id='passenger-status';status.setAttribute('role','status');status.setAttribute('aria-live','polite');
+document.querySelector('header')?.append(status);
+const trip=document.createElement('div');trip.id='passenger-trip';document.querySelector('.visualization')?.append(trip);
+const ready=document.createElement('div');ready.id='passenger-ready';ready.hidden=true;
+ready.innerHTML=`<div class="ready-card" role="dialog" aria-modal="true" aria-labelledby="ready-title"><h2 id="ready-title">출발할까요?</h2>
+<dl><dt>목적지</dt><dd id="ready-destination">목적지</dd><dt>예상 시간</dt><dd id="ready-time">출발하면 계산해요</dd></dl>
+<button type="button" class="belt" aria-pressed="false"><i aria-hidden="true"></i>안전벨트를 맸어요</button>
+<button type="button" class="go" disabled>출발</button></div>`;
+body.append(ready);
+const belt=ready.querySelector('.belt'),go=ready.querySelector('.go');
+belt.onclick=()=>{const on=belt.getAttribute('aria-pressed')!=='true';belt.setAttribute('aria-pressed',String(on));go.disabled=!on};
+go.onclick=()=>{go.disabled=true;$('passenger-depart')?.click()};
+
+let shown='',readySession=null;
+function minutesLeft(data){const m=data.route?.remaining_m;if(!(m>0))return null;const v=Math.max(Number(data.nurec?.speed_kph)||0,0);return Math.max(1,Math.round(m/((v>=5?v:30)/3.6)/60))}
+function clock(min){const d=new Date(Date.now()+min*60000);return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')}
+function state(data){
+ const n=data.nurec||{},s=n.scenario||{},ev=data.session?.navigation?.research_event,off=body.classList.contains('experiment-off')||ev?.condition==='A';
+ const departBtn=$('passenger-depart'),waiting=departBtn&&!departBtn.hidden;
+ if(!data.connected)return ['waiting','차량 연결 중'];
+ if(waiting)return ['waiting','출발 대기'];
+ const phase=ev?.outcome?.phase,study=ev?.study?.phase;
+ if(s.completed||phase==='complete'||phase==='stopping'||(Number(n.speed_kph)||0)<.5)return ['stopped',phase==='stopping'?'정차하는 중':'정차 중'];
+ if(!off&&(['applying','observing'].includes(phase)||['queued','applying','observing'].includes(study)))return ['request','요청 실행 중'];
+ if(!off&&ev?.active)return ['situation','상황 확인 중'+(ev.title?': '+ev.title:'')];
+ return ['normal','정상 주행'];
+}
+function update(data){
+ if(!data)return;
+ const [key,label]=state(data);const sig=key+label;
+ if(sig!==shown){shown=sig;status.dataset.state=key;status.innerHTML=`<svg viewBox="0 0 24 24" aria-hidden="true">${icons[key]}</svg><span></span>`;status.querySelector('span').textContent=label}
+ const min=minutesLeft(data),done=data.nurec?.scenario?.completed;
+ trip.innerHTML=min&&!done?`<b>${clock(min)} 도착</b>남은 시간 약 ${min}분`:'';
+ if($('route-eta'))$('route-eta').textContent=done?'도착':min?clock(min):'출발하면 계산해요';
+ if($('route-time'))$('route-time').textContent=done?'0분':min?min+'분':'출발하면 계산해요';
+ const departBtn=$('passenger-depart'),waiting=Boolean(departBtn&&!departBtn.hidden&&data.connected);
+ const sid=data.session?.session_id||data.nurec?.scenario?.session||'';
+ if(waiting&&readySession!==sid){readySession=sid;belt.setAttribute('aria-pressed','false');go.disabled=true}
+ ready.hidden=!waiting||!body.classList.contains('passenger-mode');
+ $('ready-destination').textContent=$('route-name')?.textContent||'목적지';
+ $('ready-time').textContent=min?'약 '+min+'분':'출발하면 계산해요';
+ const stop=$('research-fixed-stop');if(stop&&waiting)stop.hidden=true;
+ fitText();
+}
+// 2. no text under 16px in the passenger view
+let fitQueued=false;
+function fitText(){if(fitQueued)return;fitQueued=true;setTimeout(()=>{fitQueued=false;
+ for(const e of document.querySelectorAll('body *')){
+  if(e.closest('svg,canvas,script,style'))continue;
+  const own=[...e.childNodes].some(c=>c.nodeType===3&&c.textContent.trim())||/^(INPUT|SELECT|BUTTON)$/.test(e.tagName);if(!own)continue;
+  if(!body.classList.contains('passenger-mode')){if(e.dataset.fitText){e.style.fontSize='';delete e.dataset.fitText}continue}
+  if(e.dataset.fitText)continue;
+  if(parseFloat(getComputedStyle(e).fontSize)<16){e.style.fontSize='16px';e.dataset.fitText='1'}
+ }})}
+function install(){
+ setMode(sessionStorage.getItem('hongik-operator')==='1');
+ const previous=window.CockpitUpdate;window.CockpitUpdate=data=>{previous?.(data);try{update(data)}catch(e){console.warn('passenger layer',e)}};
+ new MutationObserver(fitText).observe(body,{childList:true,subtree:true});
+}
+if(document.readyState==='complete')install();else window.addEventListener('load',install);
+})();

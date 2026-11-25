@@ -70,3 +70,78 @@ body.experiment-off #research-notice{display:none!important}
 
 /* Situation explanations live in the Hongiki notice and detail panel. */
 #midterm-passive{display:none!important}
+
+/* Passenger layer (2026-11-25 design review, common items 1-5 and screen 02).
+ * body.passenger-mode is the default on the experiment page; ?operator=1 or a
+ * 2-second press on the DRIVE wordmark switches to the operator view. */
+body.passenger-mode .hongik-language-picker,body.passenger-mode #scene-audio-enable,body.passenger-mode #settings-open,
+body.passenger-mode #map-name,body.passenger-mode #map-attribution,body.passenger-mode #scene-source,
+body.passenger-mode .gears,body.passenger-mode .speed-limit,body.passenger-mode #lane,body.passenger-mode #drive-mode,
+body.passenger-mode .view-tools{display:none!important}
+#operator-flag{display:none}body.operator-mode #operator-flag{display:inline;margin-left:12px;padding:3px 8px;border-radius:6px;background:#fff1d6;color:#8a5a00;font-size:12px;font-weight:600}
+
+/* 4. one status bar, top centre */
+#passenger-status{position:fixed;top:0;left:50%;transform:translateX(-50%);z-index:7;height:48px;display:flex;align-items:center;gap:10px;padding:0 22px;color:#26354c;font:650 20px Pretendard,Arial,sans-serif;letter-spacing:-.02em;white-space:nowrap;max-width:min(60vw,760px)}
+#passenger-status svg{flex:none;width:24px;height:24px}
+#passenger-status span{overflow:hidden;text-overflow:ellipsis}
+#passenger-status[data-state="normal"]{color:#1d7a46}
+#passenger-status[data-state="situation"]{color:#b25e00}
+#passenger-status[data-state="request"]{color:#2f5fd8}
+#passenger-status[data-state="stopped"],#passenger-status[data-state="waiting"]{color:#3c4656}
+body.passenger-mode header{height:64px}
+body.passenger-mode #passenger-status{height:64px}
+body.passenger-mode main{height:calc(100dvh - 204px)}
+
+/* 3. trip info where gear and lane used to be */
+#passenger-trip{position:absolute;right:23px;top:25px;z-index:2;text-align:right;color:#5b6678;font:500 16px Pretendard,Arial,sans-serif;line-height:1.5}
+#passenger-trip b{display:block;color:#1f2a3b;font-size:24px;font-weight:700;letter-spacing:-.02em}
+body:not(.passenger-mode) #passenger-trip{display:none}
+
+/* 1. touch targets: at least 76px, 16px apart */
+body.passenger-mode .map-tools{gap:16px}
+body.passenger-mode .map-tools button{width:76px;height:76px}
+body.passenger-mode .map-tools button svg{width:26px;height:26px}
+body.passenger-mode .music-dock{height:108px}
+body.passenger-mode .play-controls{gap:16px}
+body.passenger-mode .play-controls button,body.passenger-mode #library-open{width:76px;height:76px;padding:0}
+body.passenger-mode .play-controls svg{width:26px;height:26px}
+body.passenger-mode footer{height:140px;padding-bottom:48px;gap:16px}
+body.passenger-mode footer button{min-width:76px;height:76px;font-size:20px}
+body.passenger-mode footer button svg{width:28px;height:28px}
+body.passenger-mode #emergency-stop{padding:0 24px;font-size:20px;font-weight:700}
+body.passenger-mode #research-ui .midterm-fixed{min-height:76px;min-width:160px;padding:0 28px;font-size:20px;bottom:156px}
+body.passenger-mode #research-dialog button,body.passenger-mode #research-ending button,body.passenger-mode #research-notice button,
+body.passenger-mode #experiment-request button,body.passenger-mode #research-countdown button,body.passenger-mode #research-ui > button:not(#research-launch){min-height:76px;font-size:20px}
+body.passenger-mode #research-close,body.passenger-mode #hongik-close{width:76px;height:76px;min-height:76px;font-size:32px}
+body.passenger-mode .research-confirm-actions{gap:16px}
+body.passenger-mode #experiment-request input{height:76px;font-size:20px}
+
+/* 2. text: body 20px, secondary 16px */
+body.passenger-mode #research-description,body.passenger-mode #research-live-detail,body.passenger-mode #research-vehicle-action,
+body.passenger-mode #research-confirm-copy,body.passenger-mode #research-ending-message,body.passenger-mode #route-note,
+body.passenger-mode #turn-instruction,body.passenger-mode #midterm-passive-body{font-size:20px!important;line-height:1.5}
+body.passenger-mode .route-details span,body.passenger-mode .route-details small{font-size:16px!important}
+
+/* 02 ready to depart */
+#passenger-ready{position:fixed;inset:0;z-index:45;display:grid;place-items:center;background:#0e17264d}
+#passenger-ready[hidden]{display:none}
+#passenger-ready .ready-card{width:min(640px,calc(100vw - 48px));box-sizing:border-box;padding:40px;border-radius:20px;background:#fff;box-shadow:0 24px 60px #0e172633;color:#1f2a3b;font-family:Pretendard,Arial,sans-serif}
+#passenger-ready h2{margin:0 0 28px;font-size:36px;letter-spacing:-.03em}
+#passenger-ready dl{display:grid;grid-template-columns:auto 1fr;gap:12px 24px;margin:0 0 28px;font-size:20px}
+#passenger-ready dt{color:#5b6678}#passenger-ready dd{margin:0;font-weight:650}
+#passenger-ready .belt{display:flex;align-items:center;gap:16px;width:100%;min-height:76px;margin:0 0 16px;padding:0 20px;box-sizing:border-box;border:1px solid #dce3ee;border-radius:14px;background:#f7f9fc;color:#1f2a3b;font:600 20px Pretendard,Arial,sans-serif;text-align:left;cursor:pointer}
+#passenger-ready .belt i{flex:none;width:28px;height:28px;border:2px solid #9aa6b8;border-radius:8px;display:grid;place-items:center;font-style:normal;color:#fff}
+#passenger-ready .belt[aria-pressed="true"]{border-color:#3e6ae1;background:#eef3ff}
+#passenger-ready .belt[aria-pressed="true"] i{background:#3e6ae1;border-color:#3e6ae1}
+#passenger-ready .belt[aria-pressed="true"] i::after{content:"✓";font-size:18px}
+#passenger-ready .go{width:100%;min-height:88px;border:0;border-radius:16px;background:#3e6ae1;color:#fff;font:700 24px Pretendard,Arial,sans-serif;cursor:pointer}
+#passenger-ready .go:disabled{background:#c9d3e3;cursor:default}
+body.passenger-mode #passenger-depart{display:none!important}
+body.passenger-mode #research-notice button{min-width:76px}
+body.passenger-mode #research-notice{bottom:248px;padding-right:84px}
+body.passenger-mode #research-notice-close{position:absolute;top:4px;right:4px;width:76px;height:76px}
+body.passenger-mode .music-dock .album-art{width:76px;height:76px}
+body.passenger-mode #post-drive-survey label:has(input[type=radio]){min-width:76px;min-height:76px;margin:0 12px 12px 0;padding:0 16px;box-sizing:border-box;align-items:center;justify-content:center;gap:10px;border:1px solid #dbe3ef;border-radius:12px;font-size:20px;cursor:pointer}
+body.passenger-mode #post-drive-survey label:has(input:checked){border-color:#3e6ae1;background:#eef3ff}
+body.passenger-mode #post-drive-survey input[type=radio]{width:22px;height:22px;margin:0}
+body.passenger-mode #post-drive-survey button,body.passenger-mode #emergency-confirm button,body.passenger-mode #survey-reopen{min-height:76px;min-width:76px;font-size:20px}
