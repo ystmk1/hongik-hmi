@@ -113,3 +113,31 @@ dialog::backdrop{background:rgba(255,255,255,.8)!important}
 .op-admin .notes{margin:32px 0 0;padding:0 0 0 18px;color:var(--sub)}
 .op-admin .notes li{margin:2px 0}
 .op-admin dialog .end{margin-bottom:16px}
+
+/* color pass: light gray page, white cards, filled buttons */
+:root{--page:#f4f4f2;--card:#fff;--btn:#111;--btn-hover:#3a3a3a;--danger:#d6453d}
+html,body{background:var(--page)!important}
+button{background:var(--btn)!important;color:#fff!important;border:1px solid var(--btn)!important}
+button:hover:not(:disabled){background:var(--btn-hover)!important;border-color:var(--btn-hover)!important;color:#fff!important}
+#reset-records,#reset-submit,.op-exp #end{background:var(--danger)!important;border-color:var(--danger)!important}
+#reset-records:hover:not(:disabled),#reset-submit:hover:not(:disabled),.op-exp #end:hover{background:#b8352e!important;border-color:#b8352e!important}
+#reset-cancel,#github-cancel,#close,#participant-skip{background:#fff!important;color:#000!important;border-color:#000!important}
+#reset-cancel:hover,#github-cancel:hover,#close:hover,#participant-skip:hover{background:#000!important;color:#fff!important}
+input,select{background:#fff!important}
+.op-home article,.op-exp section,.op-home .status{background:var(--card)!important;border:0!important}
+.op-home #participant-setup{background:var(--card)!important;border:0!important;padding:20px!important}
+.op-home .grid{margin:16px 0 var(--gap)!important;gap:16px!important}
+.op-home .status{margin-top:0}
+.op-exp #rounds{border-left:0!important;gap:8px!important}
+.op-exp #rounds button{background:var(--page)!important;color:#000!important;border:0!important}
+.op-exp #rounds button:hover:not(:disabled){background:#e6e6e3!important;color:#000!important}
+.op-exp #rounds button::before{color:var(--sub)!important}
+.op-exp #rounds button.next{outline:1px dashed #000;outline-offset:-6px}
+.op-exp #rounds button.done{color:var(--sub)!important}
+.op-exp #rounds button.current{background:var(--btn)!important;color:#fff!important}
+.op-exp #rounds button.current::before{color:#bbb!important}
+.op-exp .guide{background:var(--card)!important;border:0!important;padding:0 24px!important}
+.op-admin .cards{background:var(--card);border:0!important;padding:0 20px}
+.op-admin .panel{background:var(--card)!important;padding:4px 20px 8px!important}
+.op-admin th{border-top:0!important}
+.op-admin dialog{background:var(--card)}
