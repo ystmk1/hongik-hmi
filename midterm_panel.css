@@ -413,3 +413,4 @@ body.passenger-mode.docked.request-active #research-dialog .midterm-explanation>
 body.passenger-mode.docked #research-maintain.research-option{min-height:76px!important;padding:0 24px!important}
 body.passenger-mode.docked #research-maintain.research-option strong{color:#4a4f57}
 body.passenger-mode.docked #experiment-stt,body.passenger-mode.docked #experiment-request form label,body.passenger-mode.docked #experiment-result{display:none!important}
+body.passenger-mode.docked #research-ending>small,body.passenger-mode.docked #ending-exit{display:none!important}
