@@ -115,7 +115,7 @@ dialog::backdrop{background:rgba(255,255,255,.8)!important}
 .op-admin dialog .end{margin-bottom:16px}
 
 /* color pass: light gray page, white cards, filled buttons */
-:root{--page:#f4f4f2;--card:#fff;--btn:#111;--btn-hover:#3a3a3a;--danger:#d6453d}
+:root{--page:#fafafa;--card:#fff;--btn:#111;--btn-hover:#3a3a3a;--danger:#d6453d}
 html,body{background:var(--page)!important}
 button{background:var(--btn)!important;color:#fff!important;border:1px solid var(--btn)!important}
 button:hover:not(:disabled){background:var(--btn-hover)!important;border-color:var(--btn-hover)!important;color:#fff!important}
