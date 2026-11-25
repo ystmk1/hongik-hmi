@@ -145,3 +145,83 @@ body.passenger-mode #post-drive-survey label:has(input[type=radio]){min-width:76
 body.passenger-mode #post-drive-survey label:has(input:checked){border-color:#3e6ae1;background:#eef3ff}
 body.passenger-mode #post-drive-survey input[type=radio]{width:22px;height:22px;margin:0}
 body.passenger-mode #post-drive-survey button,body.passenger-mode #emergency-confirm button,body.passenger-mode #survey-reopen{min-height:76px;min-width:76px;font-size:20px}
+
+/* Screen proposals (2026-11-25 review, screens 03 to 11) */
+@property --hold{syntax:'<percentage>';inherits:false;initial-value:0%}
+/* 03-1 notice drops from the status bar and stays; 03-4 the whole card opens Hongiki */
+body.passenger-mode #research-notice{left:50%;right:auto;top:76px;bottom:auto;width:min(760px,calc(100vw - 48px));transform:translateX(-50%);padding:20px 92px 18px 28px;border:2px solid #f2a24a;border-radius:18px;cursor:pointer;animation:notice-drop .35s ease-out}
+body.passenger-mode #research-notice #research-notice-copy{font-size:22px;font-weight:650;line-height:1.5;margin:4px 0 8px}
+body.passenger-mode #research-notice .notice-accent{display:none}
+@keyframes notice-drop{from{opacity:0;transform:translate(-50%,-28px)}to{opacity:1;transform:translate(-50%,0)}}
+body.alert-flash::after{content:"";position:fixed;inset:0;z-index:2147482000;border:8px solid #f2a24a;pointer-events:none;animation:edge-flash 2.4s ease-out forwards}
+@keyframes edge-flash{0%,40%{opacity:1}100%{opacity:0}}
+/* 03-2 cause marker */
+#cause-mark{position:fixed;z-index:6;border:3px solid #f28a1e;border-radius:12px;pointer-events:none;box-shadow:0 0 0 4px #f28a1e33}
+#cause-mark[hidden]{display:none}
+#cause-mark span{position:absolute;left:50%;bottom:calc(100% + 8px);transform:translateX(-50%);white-space:nowrap;padding:6px 12px;border-radius:999px;background:#f28a1e;color:#fff;font:700 16px Pretendard,Arial,sans-serif}
+/* 03-3 the wave becomes a labelled button when something happens */
+body.passenger-mode #research-launch.has-update .wave-label{opacity:1;visibility:visible;pointer-events:auto;min-height:76px;padding:0 32px;border:0;border-radius:38px;background:#3e6ae1;color:#fff;box-shadow:0 10px 30px #3e6ae155;transform:translateX(-50%)}
+body.passenger-mode #research-launch.has-update .wave-label strong,body.passenger-mode #research-launch.has-update .wave-label small{display:none}
+body.passenger-mode #research-launch.has-update .wave-label::after{content:"홍익이에게 묻기";font:700 22px Pretendard,Arial,sans-serif}
+/* 04-1 right-half sheet keeps the 3D view visible */
+body.passenger-mode #research-dialog:not([hidden]){left:calc(50% - 8px)!important;right:16px!important;top:76px!important;bottom:152px!important;display:flex;flex-direction:column}
+body.passenger-mode .research-dialog-content{grid-template-columns:1fr!important;gap:24px!important;overflow:auto;flex:1;padding:20px 28px!important}
+/* 04-4 one sentence and two numbers */
+body.passenger-mode .midterm-explanation .midterm-info-card:first-of-type,body.passenger-mode #research-live-detail{display:none!important}
+#situation-metrics{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}
+#situation-metrics div{padding:16px 20px;border-radius:14px;background:#f3f6fb}
+#situation-metrics small{display:block;color:#5b6678;font-size:16px}
+#situation-metrics b{display:block;margin-top:2px;color:#1f2a3b;font-size:40px;font-weight:750;letter-spacing:-.03em;line-height:1.2}
+body:not(.passenger-mode) #situation-metrics{display:none}
+/* 04-2, 04-3 choices: same weight for keep-as-is, expected outcome on every choice */
+#options-note{margin:0 0 12px;color:#5b6678;font-size:16px}
+#options-note[hidden]{display:none}
+body.passenger-mode #research-maintain:not([hidden]){display:flex;flex-direction:column;align-items:flex-start;gap:5px;width:100%;margin:12px 0 0;padding:15px 18px;border:1px solid #e0e6ef;border-radius:12px;background:#fff;color:#26354c;text-decoration:none;text-align:left;min-height:76px;font:inherit;cursor:pointer}
+.research-option .effect{display:block;margin-top:4px;color:#2f5fd8;font-size:16px;font-weight:600}
+body:not(.passenger-mode) .research-option .effect{display:none}
+body.passenger-mode #research-maintain strong{font-size:18px}
+/* 07-4 request steps */
+#request-steps{display:flex;gap:8px;margin:0 0 20px;padding:0;list-style:none;counter-reset:s}
+#request-steps[hidden]{display:none}
+#request-steps li{flex:1;padding:10px 0;border-top:4px solid #dde4ee;color:#8a95a6;font-size:16px;font-weight:650;text-align:center}
+#request-steps li.done{border-color:#9db4f0;color:#5b6678}
+#request-steps li.now{border-color:#3e6ae1;color:#2f5fd8}
+/* 06-1 countdown ring, 05-3 preview */
+#countdown-ring{position:relative;width:140px;height:140px;margin:8px auto}
+#countdown-ring svg{position:absolute;inset:0;transform:rotate(-90deg)}
+#countdown-ring circle{fill:none;stroke-width:8}
+#countdown-ring .track{stroke:#dbe4f6}
+#countdown-ring .bar{stroke:#3e6ae1;stroke-linecap:round;transition:stroke-dashoffset .2s linear}
+#countdown-ring #research-countdown-number{position:absolute;inset:0;display:grid;place-items:center;font-size:56px}
+#request-preview{margin:20px 0 0;padding:16px;border-radius:12px;background:#fff}
+#request-preview[hidden]{display:none}
+#request-preview svg{display:block;width:100%;height:auto}
+#request-preview figcaption{margin-top:8px;color:#26354c;font-size:18px;font-weight:650}
+body.passenger-mode #research-pending-cancel{width:100%;min-height:88px!important;font-size:22px!important;font-weight:700}
+#result-caption{margin:8px 0 0;color:#5b6678;font-size:16px}
+#result-caption[hidden]{display:none}
+/* 08 end-of-drive summary */
+#ending-summary-list{display:grid;grid-template-columns:auto 1fr;gap:10px 20px;margin:16px 0;font-size:20px}
+#ending-summary-list dt{color:#5b6678}#ending-summary-list dd{margin:0;font-weight:650}
+#ending-exit{margin:0 0 20px;padding:16px 20px 16px 40px;border-radius:12px;background:#f3f6fb;font-size:18px;line-height:1.7}
+#ending-survey{width:100%;min-height:80px;font-size:22px!important}
+#ending-survey[hidden]{display:none}
+body.passenger-mode #research-ending-message,body.passenger-mode #research-ending-summary{display:none}
+body.passenger-mode #research-replay,body.passenger-mode #research-ending-home,body.passenger-mode #research-return-home,body.passenger-mode #experiment-home{display:none!important}
+body.passenger-mode:has(#research-ending:not([hidden])) #survey-reopen{display:none!important}
+body:not(.passenger-mode) #ending-summary-list,body:not(.passenger-mode) #ending-exit,body:not(.passenger-mode) #ending-survey{display:none}
+/* 11 emergency stop: one big red button, hold 1 s */
+body.passenger-mode #emergency-stop{min-width:220px;border-radius:38px;background:linear-gradient(90deg,#8f1d1d var(--hold),#d93a3a var(--hold));color:#fff!important;padding:0 32px}
+body.passenger-mode #emergency-stop svg{color:#fff}
+#emergency-stop.holding{animation:hold-fill 1s linear forwards}
+@keyframes hold-fill{to{--hold:100%}}
+body.passenger-mode #survey-context{display:none}
+/* while a request runs the panel shows only the request */
+body.passenger-mode.request-active #situation-metrics,body.passenger-mode.request-active .midterm-explanation .midterm-info-card{display:none!important}
+#countdown-ring svg{width:140px!important;height:140px!important;margin:0!important}
+#countdown-ring #research-countdown-number{position:absolute!important;inset:0!important;margin:0!important;display:grid!important;place-items:center;line-height:1!important}
+/* the Hongiki pill only appears as the ask button; status lives in the top bar */
+body.passenger-mode #research-launch:not(.has-update) .wave-label{opacity:0!important;visibility:hidden!important}
+body.passenger-mode #research-launch.has-update .wave-label{left:24%;bottom:156px}
+body.passenger-mode #research-notice{background:#fff}
+#request-preview svg{width:100%!important;height:120px!important}

@@ -107,7 +107,7 @@ function attachTrial(){
 
 // ---------- study requests (port of midterm_study.StudyRequests, simplified physics) ----------
 function intentLine(action){const key=voice?.ko?.intent_actions?.[action];return voice?.ko?.voices?.[key]?.text||'요청을 준비했어요.'}
-const REQUEST_DELAY=3.5; // lab: length of the cached acknowledgement voice (3 to 15 s)
+const REQUEST_DELAY=3; // lab: length of the cached acknowledgement voice (3 to 15 s); design proposal 06-2 fixes it at 3 s
 // experiment_protocol.Protocol.request: explain, notify and maintain are answered without a vehicle action
 function protocolRequest(action){
  const p=sim.exp;if(!p)return null;
