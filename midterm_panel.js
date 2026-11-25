@@ -44,7 +44,7 @@ const endClose=document.createElement('button');endClose.id='research-ending-clo
 const replay=document.createElement('button');replay.id='research-replay';replay.type='button';replay.textContent='같은 상황 다시 확인';$('research-ending').append(replay);let replayBusy=false;
 const returnHome=document.createElement('button');returnHome.id='research-return-home';returnHome.type='button';returnHome.textContent='시나리오 선택으로';returnHome.hidden=true;root.append(returnHome);
 const notice=document.createElement('section');notice.id='research-notice';notice.hidden=true;notice.setAttribute('role','status');notice.setAttribute('aria-live','polite');
-notice.innerHTML='<span class="notice-accent" aria-hidden="true"></span><small>홍익이</small><p id="research-notice-copy"></p><button id="research-notice-more" type="button">자세히 보기 <span aria-hidden="true">›</span></button><button id="research-notice-close" type="button" aria-label="상황 알림 닫기">×</button>';
+notice.innerHTML='<span class="notice-accent" aria-hidden="true"></span><small>홍익이</small><p id="research-notice-copy" class="ko-subtitle"></p><button id="research-notice-more" type="button">자세히 보기 <span aria-hidden="true">›</span></button><button id="research-notice-close" type="button" aria-label="상황 알림 닫기">×</button>';
 root.append(notice);let noticeTimer=null,noticeToken=0;
 function hideNotice(){noticeToken++;clearTimeout(noticeTimer);notice.hidden=true}
 async function showNotice(){
@@ -535,10 +535,10 @@ const hhmm=d=>String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).pa
 const header=document.querySelector('header');
 const now=document.createElement('strong');now.id='hdr-now';const eta=document.createElement('strong');eta.id='hdr-eta';header?.append(now,eta);
 const card=document.createElement('section');card.id='situation-card';card.hidden=true;card.setAttribute('aria-live','polite');
-card.innerHTML='<div class="sc-top"><small id="sc-title"></small><button type="button" id="sc-open">가능한 액션 보기</button></div><p id="sc-body"></p>';
+card.innerHTML='<div class="sc-top"><small id="sc-title"></small><button type="button" id="sc-open">가능한 액션 보기</button></div><p id="sc-body" class="ko-subtitle"></p>';
 document.querySelector('.visualization')?.append(card);
 const pane=document.createElement('section');pane.id='option-pane';
-pane.innerHTML='<h2 id="pane-title">차량 주행 옵션 선택하기</h2><div class="pane-card"><p id="pane-copy"></p><button type="button" id="pane-open" class="research-primary" hidden>주행 옵션 보기</button></div>';
+pane.innerHTML='<h2 id="pane-title">차량 주행 옵션 선택하기</h2><div class="pane-card"><p id="pane-copy" class="ko-subtitle"></p><button type="button" id="pane-open" class="research-primary" hidden>주행 옵션 보기</button></div>';
 document.querySelector('.map-panel')?.append(pane);
 const foot=document.querySelector('footer');
 const help=document.createElement('button');help.id='footer-help';help.type='button';help.textContent='고객센터 연결';
@@ -551,6 +551,7 @@ help.onclick=()=>$('research-fixed-help')?.click();
 stop.onclick=()=>$('research-fixed-stop')?.click();
 music.onclick=()=>$('library-open')?.click();
 $('research-close')?.addEventListener('click',e=>{if(body.classList.contains('direct-mode')){e.stopImmediatePropagation();body.classList.remove('direct-mode')}},true);
+function setSub(el,text){if(el&&el.dataset.raw!==text){el.dataset.raw=text;el.textContent=text}}
 function tick(){now.textContent='현재 시각 '+hhmm(new Date())}tick();setInterval(tick,15000);
 function update(d){
  if(!body.classList.contains('passenger-mode'))return;
@@ -560,12 +561,13 @@ function update(d){
  eta.textContent=complete?'도착':min?'도착 예정 시각 '+hhmm(new Date(Date.now()+min*60000)):'';
  const active=Boolean(ev?.active)&&!off&&!complete,dialogOpen=!$('research-dialog')?.hidden;
  card.hidden=!active;
- if(active){$('sc-title').textContent=ev.title||'';$('sc-body').textContent=ev.situation||ev.description||'';$('sc-open').hidden=dialogOpen}
+ if(active){$('sc-title').textContent=ev.title||'';setSub($('sc-body'),ev.situation||ev.description||'');$('sc-open').hidden=dialogOpen}
  const waiting=!$('passenger-ready')?.hidden,ending=!$('research-ending')?.hidden;
  const survey=Boolean($('post-drive-survey')?.open),st=ev?.study?.phase,running=!off&&['queued','applying','observing','stopping'].includes(st);
  $('pane-title').hidden=off&&!waiting&&!ending&&!survey;$('pane-title').textContent=survey?'주행 후 설문':waiting?'출발 준비':ending?'주행 결과':'차량 주행 옵션 선택하기';
- $('pane-copy').textContent=off||!active?'차가 경로를 따라 주행하고 있어요':'가능한 액션을 여기에서 고를 수 있어요';
- if(running){$('pane-copy').textContent=$('passenger-status')?.textContent||'요청을 진행하고 있어요';$('pane-open').textContent='진행 상황 보기'}else $('pane-open').textContent='가능한 액션 보기';
+ let paneText=off||!active?'차가 경로를 따라 주행하고 있어요':'가능한 액션을 여기에서 고를 수 있어요';
+ if(running){paneText=$('passenger-status')?.textContent||'요청을 진행하고 있어요';$('pane-open').textContent='진행 상황 보기'}else $('pane-open').textContent='가능한 액션 보기';
+ setSub($('pane-copy'),paneText);
  $('pane-open').hidden=!(active||running)||dialogOpen;
  pane.dataset.covered=String(dialogOpen||waiting||ending||survey);
  const lane=$('lane');if(lane&&lane.innerHTML.includes('왼쪽부터'))lane.innerHTML=lane.innerHTML.replace(' · 왼쪽부터','');

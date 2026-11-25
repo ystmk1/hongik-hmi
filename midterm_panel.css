@@ -433,3 +433,6 @@ body.passenger-mode.docked #sc-body{margin:calc(10*var(--u)) 0 calc(22*var(--u))
 body.passenger-mode.docked #sc-open{width:auto;min-width:calc(320*var(--u));min-height:calc(60*var(--u));padding:0 calc(40*var(--u));border:0;border-radius:calc(30*var(--u));background:linear-gradient(180deg,#5d82f5,#3e6ae1);color:#fff;font-size:calc(20*var(--u));font-weight:700;box-shadow:0 calc(8*var(--u)) calc(20*var(--u)) rgba(62,106,225,.32),inset 0 1px 0 rgba(255,255,255,.25)}
 @keyframes alert-in{from{opacity:0;transform:translateY(calc(16*var(--u))) scale(.98)}to{opacity:1;transform:none}}
 body.passenger-mode.docked #situation-card:has(#sc-open[hidden]) #sc-body{margin-bottom:0}
+/* ko-typeset subtitles measure their own width, so keep it fixed to the container */
+body.passenger-mode.docked #sc-body{align-self:stretch}
+body.passenger-mode.docked #pane-copy{align-self:center;width:min(calc(620*var(--u)),100%)}
